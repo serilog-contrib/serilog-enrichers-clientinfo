@@ -31,13 +31,7 @@ namespace Serilog.Enrichers
             if (_contextAccessor.HttpContext == null)
                 return;
 
-#if NETFULL
-
             var ipAddress = GetIpAddress();
-
-#else
-            var ipAddress = _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
-#endif
 
             if (string.IsNullOrWhiteSpace(ipAddress))
                 ipAddress = "unknown";
@@ -46,6 +40,8 @@ namespace Serilog.Enrichers
 
             logEvent.AddPropertyIfAbsent(ipAddressProperty);
         }
+
+#if NETFULL
 
         private string GetIpAddress()
         {
@@ -60,5 +56,12 @@ namespace Serilog.Enrichers
 
             return _contextAccessor.HttpContext.Request.ServerVariables["REMOTE_ADDR"];
         }
+
+#else
+     private string GetIpAddress()
+     {
+        return _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+     }
+#endif
     }
 }

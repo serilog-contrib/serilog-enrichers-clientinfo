@@ -29,10 +29,13 @@ namespace Serilog.Enrichers
         {
             if (_contextAccessor.HttpContext == null)
                 return;
-
+#if NETFULL
             var agentName = _contextAccessor.HttpContext.Request.Headers["User-Agent"];
+#else
+            var agentName = _contextAccessor.HttpContext.Request.Headers["User-Agent"];
+#endif
 
-            var ipAddressProperty = new LogEventProperty(IpAddressPropertyName, new ScalarValue(agentName ?? "unknown"));
+            var ipAddressProperty = new LogEventProperty(IpAddressPropertyName, new ScalarValue(agentName));
 
             logEvent.AddPropertyIfAbsent(ipAddressProperty);
         }
