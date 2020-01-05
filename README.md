@@ -26,12 +26,11 @@ or in `appsttings.json` file:
 {
   "Serilog": {
     "MinimumLevel": "Debug",
-    "WriteTo": [
-      { "Name": "Console" },
-      { "Name": "File", "Args": { "path": "%TEMP%\\Logs\\serilog-configuration-sample.txt" } }
-    ],
     "Using":  [ "Serilog.Enrichers" ],
     "Enrich": [ "WithClientIp", "WithClientAgent"],
+    "WriteTo": [
+      { "Name": "Console" }
+    ]
   }
 }
 ```
