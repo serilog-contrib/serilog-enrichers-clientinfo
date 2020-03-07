@@ -26,7 +26,7 @@ or in `appsttings.json` file:
 {
   "Serilog": {
     "MinimumLevel": "Debug",
-    "Using":  [ "Serilog.Enrichers" ],
+    "Using":  [ "Serilog.Enrichers.ClientInfo" ],
     "Enrich": [ "WithClientIp", "WithClientAgent"],
     "WriteTo": [
       { "Name": "Console" }
