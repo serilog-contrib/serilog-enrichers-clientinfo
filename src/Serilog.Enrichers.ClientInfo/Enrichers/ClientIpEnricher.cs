@@ -1,5 +1,7 @@
 ﻿using Serilog.Core;
 using Serilog.Events;
+using System;
+using System.Linq;
 
 #if NETFULL
 
@@ -49,9 +51,7 @@ namespace Serilog.Enrichers
 
             if (!string.IsNullOrEmpty(ipAddress))
             {
-                var addresses = ipAddress.Split(',');
-                if (addresses.Length != 0)
-                    return addresses[0];
+                return GetIpAddressFromProxy(ipAddress);
             }
 
             return _contextAccessor.HttpContext.Request.ServerVariables["REMOTE_ADDR"];
@@ -60,8 +60,31 @@ namespace Serilog.Enrichers
 #else
      private string GetIpAddress()
      {
-        return _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+         var ipAddress = _contextAccessor.HttpContext.Request.Headers["X-forwarded-for"].FirstOrDefault();
+
+         if (!string.IsNullOrEmpty(ipAddress))
+         {
+             return GetIpAddressFromProxy(ipAddress);
+         }
+         
+         return _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
      }
 #endif
+        
+    private string GetIpAddressFromProxy(string proxiedIpList)
+    {
+        var addresses = proxiedIpList.Split(',');
+
+        if (addresses.Length != 0)
+        {
+            // If IP contains port, it will be after the last : (IPv6 uses : as delimiter and could have more of them)
+            return addresses[0].Contains(":")
+                ? addresses[0].Substring(0, addresses[0].LastIndexOf(":", StringComparison.Ordinal))
+                : addresses[0];
+        }
+
+        return string.Empty;
+    }
+    
     }
 }
