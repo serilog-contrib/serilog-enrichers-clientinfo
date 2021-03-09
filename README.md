@@ -21,7 +21,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 ```
 
-or in `appsttings.json` file:
+or in `appsettings.json` file:
 ```json
 {
   "Serilog": {
