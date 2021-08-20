@@ -13,7 +13,9 @@ namespace Serilog.Enrichers
 {
     public class ClientAgentEnricher : ILogEventEnricher
     {
-        private const string IpAddressPropertyName = "ClientAgent";
+        private const string ClientAgentPropertyName = "ClientAgent";
+        private const string ClientAgentItemKey = "Serilog_ClientAgent";
+
         private readonly IHttpContextAccessor _contextAccessor;
 
         public ClientAgentEnricher() : this(new HttpContextAccessor())
@@ -27,17 +29,27 @@ namespace Serilog.Enrichers
 
         public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
         {
-            if (_contextAccessor.HttpContext == null)
+            var httpContext = _contextAccessor.HttpContext;
+            if (httpContext == null)
                 return;
+
+            if (httpContext.Items[ClientAgentItemKey] is LogEventProperty logEventProperty)
+            {
+                logEvent.AddPropertyIfAbsent(logEventProperty);
+                return;
+            }
+
 #if NETFULL
-            var agentName = _contextAccessor.HttpContext.Request.Headers["User-Agent"];
+            var agentName = httpContext.Request.Headers["User-Agent"];
 #else
-            var agentName = _contextAccessor.HttpContext.Request.Headers["User-Agent"];
+            var agentName = httpContext.Request.Headers["User-Agent"];
 #endif
 
-            var ipAddressProperty = new LogEventProperty(IpAddressPropertyName, new ScalarValue(agentName));
 
-            logEvent.AddPropertyIfAbsent(ipAddressProperty);
+            var clientAgentProperty = new LogEventProperty(ClientAgentPropertyName, new ScalarValue(agentName));
+            httpContext.Items.Add(ClientAgentItemKey, clientAgentProperty);
+
+            logEvent.AddPropertyIfAbsent(clientAgentProperty);
         }
     }
 }
