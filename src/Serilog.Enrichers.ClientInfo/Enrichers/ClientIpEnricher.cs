@@ -16,7 +16,7 @@ namespace Serilog.Enrichers
     public class ClientIpEnricher : ILogEventEnricher
     {
         private const string IpAddressPropertyName = "ClientIp";
-        private const string IpAddresstItemKey = "Serilog_ClientIp";
+        private const string IpAddressItemKey = "Serilog_ClientIp";
 
         private readonly IHttpContextAccessor _contextAccessor;
 
@@ -36,7 +36,7 @@ namespace Serilog.Enrichers
             if (httpContext == null)
                 return;
 
-            if (httpContext.Items[IpAddresstItemKey] is LogEventProperty logEventProperty)
+            if (httpContext.Items[IpAddressItemKey] is LogEventProperty logEventProperty)
             {
                 logEvent.AddPropertyIfAbsent(logEventProperty);
                 return;
@@ -48,7 +48,7 @@ namespace Serilog.Enrichers
                 ipAddress = "unknown";
 
             var ipAddressProperty = new LogEventProperty(IpAddressPropertyName, new ScalarValue(ipAddress));
-            httpContext.Items.Add(IpAddresstItemKey, ipAddressProperty);
+            httpContext.Items.Add(IpAddressItemKey, ipAddressProperty);
 
             logEvent.AddPropertyIfAbsent(ipAddressProperty);
         }
@@ -76,25 +76,24 @@ namespace Serilog.Enrichers
          {
              return GetIpAddressFromProxy(ipAddress);
          }
-         
+
          return _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
      }
 #endif
-        
-    private string GetIpAddressFromProxy(string proxiedIpList)
-    {
-        var addresses = proxiedIpList.Split(',');
 
-        if (addresses.Length != 0)
+        private string GetIpAddressFromProxy(string proxifiedIpList)
         {
-            // If IP contains port, it will be after the last : (IPv6 uses : as delimiter and could have more of them)
-            return addresses[0].Contains(":")
-                ? addresses[0].Substring(0, addresses[0].LastIndexOf(":", StringComparison.Ordinal))
-                : addresses[0];
-        }
+            var addresses = proxifiedIpList.Split(',');
 
-        return string.Empty;
-    }
-    
+            if (addresses.Length != 0)
+            {
+                // If IP contains port, it will be after the last : (IPv6 uses : as delimiter and could have more of them)
+                return addresses[0].Contains(":")
+                    ? addresses[0].Substring(0, addresses[0].LastIndexOf(":", StringComparison.Ordinal))
+                    : addresses[0];
+            }
+
+            return string.Empty;
+        }
     }
 }
