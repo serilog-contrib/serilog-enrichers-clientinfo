@@ -9,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F5A0A932-D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serilog.Enrichers.ClientInfo", "src\Serilog.Enrichers.ClientInfo\Serilog.Enrichers.ClientInfo.csproj", "{232EFC21-2E8D-44B0-8506-C0DCE122AAA2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Enrichers.ClientInfo.Tests", "test\Serilog.Enrichers.ClientInfo.Tests\Serilog.Enrichers.ClientInfo.Tests.csproj", "{A6AFC898-47F8-4F6D-9391-C79689885B7A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,12 +21,17 @@ Global
 		{232EFC21-2E8D-44B0-8506-C0DCE122AAA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{232EFC21-2E8D-44B0-8506-C0DCE122AAA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{232EFC21-2E8D-44B0-8506-C0DCE122AAA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6AFC898-47F8-4F6D-9391-C79689885B7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6AFC898-47F8-4F6D-9391-C79689885B7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6AFC898-47F8-4F6D-9391-C79689885B7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6AFC898-47F8-4F6D-9391-C79689885B7A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{232EFC21-2E8D-44B0-8506-C0DCE122AAA2} = {84342DE9-9E61-4802-9E77-305CFFD0D2B5}
+		{A6AFC898-47F8-4F6D-9391-C79689885B7A} = {F5A0A932-DD02-47C1-B81E-3F34F879FEEF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {785F0E90-8DC5-4003-AD7A-33DE806F3B3A}
