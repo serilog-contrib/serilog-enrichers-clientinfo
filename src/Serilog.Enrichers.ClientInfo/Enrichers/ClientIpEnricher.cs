@@ -2,6 +2,7 @@
 using Serilog.Events;
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 #if NETFULL
 
@@ -10,6 +11,8 @@ using Serilog.Enrichers.ClientInfo.Accessors;
 #else
 using Microsoft.AspNetCore.Http;
 #endif
+
+[assembly: InternalsVisibleTo("Serilog.Enrichers.ClientInfo.Tests")]
 
 namespace Serilog.Enrichers
 {
@@ -59,25 +62,20 @@ namespace Serilog.Enrichers
         {
             var ipAddress = _contextAccessor.HttpContext.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
 
-            if (!string.IsNullOrEmpty(ipAddress))
-            {
-                return GetIpAddressFromProxy(ipAddress);
-            }
-
-            return _contextAccessor.HttpContext.Request.ServerVariables["REMOTE_ADDR"];
+            return !string.IsNullOrEmpty(ipAddress)
+                ? GetIpAddressFromProxy(ipAddress)
+                : _contextAccessor.HttpContext.Request.ServerVariables["REMOTE_ADDR"];
         }
 
 #else
      private string GetIpAddress()
      {
-         var ipAddress = _contextAccessor.HttpContext.Request.Headers["X-forwarded-for"].FirstOrDefault();
+         var ipAddress = _contextAccessor.HttpContext?.Request?.Headers["X-forwarded-for"].FirstOrDefault();
 
          if (!string.IsNullOrEmpty(ipAddress))
-         {
              return GetIpAddressFromProxy(ipAddress);
-         }
 
-         return _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+         return _contextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
      }
 #endif
 
