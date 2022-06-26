@@ -40,7 +40,7 @@ The `WithClientIp()` enricher will add a `ClientIp` property and the `WithClient
 For `ClientIp` enricher you can configure the `X-forwarded-for` header if the proxy server uses a different header to forward IP address.
 ```csharp
 Log.Logger = new LoggerConfiguration()
-    .Enrich.WithClientIp("CF-Connecting-IP")
+    .Enrich.WithClientIp(xForwardHeaderName: "CF-Connecting-IP")
     ...
 ```
 ```json
