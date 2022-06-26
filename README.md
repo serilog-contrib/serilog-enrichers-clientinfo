@@ -37,6 +37,30 @@ or in `appsettings.json` file:
 
 The `WithClientIp()` enricher will add a `ClientIp` property and the `WithClientAgent()` enricher will add a `ClientAgent` property to produced events.
 
+For `ClientIp` enricher you can configure the `X-forwarded-for` header if the proxy server uses a different header to forward IP address.
+```csharp
+Log.Logger = new LoggerConfiguration()
+    .Enrich.WithClientIp("CF-Connecting-IP")
+    ...
+```
+```json
+{
+  "Serilog": {
+    "MinimumLevel": "Debug",
+    "Using":  [ "Serilog.Enrichers.ClientInfo" ],
+    "Enrich": [ 
+      "WithClientAgent",
+      {
+        "Name": "WithClientIp",
+        "Args": {
+          "xForwardHeaderName": "CF-Connecting-IP"
+        }
+      }
+    ],
+  }
+}
+```
+
 ## Installing into an ASP.NET Core Web Application
 You need to register the `IHttpContextAccessor` singleton so the enrichers have access to the requests `HttpContext` to extract client IP and client agent.
 This is what your `Startup` class should contain in order for this enricher to work as expected:
