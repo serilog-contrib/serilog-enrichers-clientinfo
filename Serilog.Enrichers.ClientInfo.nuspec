@@ -7,11 +7,11 @@
     <authors>mo.esmp</authors>
     <owners>mo.esmp</owners>
     <projectUrl>https://github.com/mo-esmp/serilog-enrichers-clientinfo</projectUrl>
-    <licenseUrl>https://github.com/mo-esmp/serilog-enrichers-clientinfo/blob/master/LICENSE</licenseUrl>
+    <license type="expression">MIT</license>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Enrich logs with client IP and UserAgent..</description>
 	<readme>docs\README.md</readme>
-    <releaseNotes></releaseNotes>
+	<releaseNotes></releaseNotes>
     <copyright></copyright>
     <tags>serilog enrichers enricher ip useragent user-agent</tags>
     <dependencies>
@@ -29,9 +29,9 @@
     </dependencies>  
   </metadata>
   <files>
-    <file src="src\Serilog.Enrichers.ClientInfo\bin\$target$\net452\Serilog.Enrichers.ClientInfo.dll" target="lib/net462" />
+    <file src="src\Serilog.Enrichers.ClientInfo\bin\$target$\net462\Serilog.Enrichers.ClientInfo.dll" target="lib/net462" />
     <file src="src\Serilog.Enrichers.ClientInfo\bin\$target$\netstandard2.0\Serilog.Enrichers.ClientInfo.dll" target="lib/netstandard2.0" />
     <file src="src\Serilog.Enrichers.ClientInfo\bin\$target$\netstandard2.1\Serilog.Enrichers.ClientInfo.dll" target="lib/netstandard2.1" />
-	<file src="..\..\README.md" target="docs\" />
+	<file src="README.md" target="docs\" />
   </files>  
 </package>
