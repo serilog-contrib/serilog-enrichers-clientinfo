@@ -10,11 +10,12 @@
     <licenseUrl>https://github.com/mo-esmp/serilog-enrichers-clientinfo/blob/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Enrich logs with client IP and UserAgent..</description>
+	<readme>docs\README.md</readme>
     <releaseNotes></releaseNotes>
     <copyright></copyright>
     <tags>serilog enrichers enricher ip useragent user-agent</tags>
     <dependencies>
-        <group targetFramework="net452">
+        <group targetFramework="net462">
             <dependency id="Serilog" version="2.4.0" />
         </group>
         <group targetFramework="netstandard2.0">
@@ -28,8 +29,9 @@
     </dependencies>  
   </metadata>
   <files>
-    <file src="src\Serilog.Enrichers.ClientInfo\bin\$target$\net452\Serilog.Enrichers.ClientInfo.dll" target="lib/net452" />
+    <file src="src\Serilog.Enrichers.ClientInfo\bin\$target$\net452\Serilog.Enrichers.ClientInfo.dll" target="lib/net462" />
     <file src="src\Serilog.Enrichers.ClientInfo\bin\$target$\netstandard2.0\Serilog.Enrichers.ClientInfo.dll" target="lib/netstandard2.0" />
     <file src="src\Serilog.Enrichers.ClientInfo\bin\$target$\netstandard2.1\Serilog.Enrichers.ClientInfo.dll" target="lib/netstandard2.1" />
+	<file src="..\..\README.md" target="docs\" />
   </files>  
 </package>
