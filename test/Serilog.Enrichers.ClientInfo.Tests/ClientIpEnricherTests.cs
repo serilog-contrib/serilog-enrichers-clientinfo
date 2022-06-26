@@ -68,7 +68,7 @@ namespace Serilog.Enrichers.ClientInfo.Tests
         {
             //Arrange
             _contextAccessor.HttpContext.Connection.RemoteIpAddress = IPAddress.Loopback;
-            _contextAccessor.HttpContext.Request.Headers.Add("X-forwarded-for", IPAddress.Broadcast.ToString());
+            _contextAccessor.HttpContext.Request.Headers.Add(ClinetIpConfiguration.XForwardHeaderName, IPAddress.Broadcast.ToString());
 
             var ipEnricher = new ClientIpEnricher(_contextAccessor);
 
@@ -88,48 +88,29 @@ namespace Serilog.Enrichers.ClientInfo.Tests
         }
 
         [Fact]
-        public void When_Enrich_Log_Event_ClientAgentEnricher_Should_Contain_ClientAgent_Property()
+        public void When_Enrich_Log_Event_With_IpEnricher_With_Custom_XForwardHeader_AndRequest_Contain_ForwardHeader_Should_Read_ClientIp_Value_From_Header_Value()
         {
-            var httpContext = new DefaultHttpContext();
-            var contextAccessor = Substitute.For<IHttpContextAccessor>();
-            contextAccessor.HttpContext.Returns(httpContext);
+            //Arrange
+            const string customForwardHeader = "CustomForwardHeader";
+            _contextAccessor.HttpContext.Connection.RemoteIpAddress = IPAddress.Loopback;
+            _contextAccessor.HttpContext.Request.Headers.Add(customForwardHeader, IPAddress.Broadcast.ToString());
 
-            var agentEnricher = new ClientAgentEnricher(contextAccessor);
+            var ipEnricher = new ClientIpEnricher(_contextAccessor);
+            ClinetIpConfiguration.XForwardHeaderName = customForwardHeader;
 
             LogEvent evt = null;
             var log = new LoggerConfiguration()
-                .Enrich.With(agentEnricher)
+                .Enrich.With(ipEnricher)
                 .WriteTo.Sink(new DelegatingSink(e => evt = e))
                 .CreateLogger();
 
-            log.Information(@"Has an Agent property");
+            // Act
+            log.Information(@"Has an IP property");
 
+            // Assert
             Assert.NotNull(evt);
-            Assert.True(evt.Properties.ContainsKey("ClientAgent"));
-            Assert.True(string.IsNullOrEmpty(evt.Properties["ClientAgent"].LiteralValue().ToString()));
-        }
-
-        [Fact]
-        public void When_Enrich_Log_Event_ClientAgentEnricher_And_Request_Contain_UserAgentHeader_Should_ClientAgentProperty_Have_Value()
-        {
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.Headers.Add("User-Agent", "Test Agent");
-            var contextAccessor = Substitute.For<IHttpContextAccessor>();
-            contextAccessor.HttpContext.Returns(httpContext);
-
-            var agentEnricher = new ClientAgentEnricher(contextAccessor);
-
-            LogEvent evt = null;
-            var log = new LoggerConfiguration()
-                .Enrich.With(agentEnricher)
-                .WriteTo.Sink(new DelegatingSink(e => evt = e))
-                .CreateLogger();
-
-            log.Information(@"Has an Agent property");
-
-            Assert.NotNull(evt);
-            Assert.True(evt.Properties.ContainsKey("ClientAgent"));
-            Assert.Equal("Test Agent", evt.Properties["ClientAgent"].LiteralValue().ToString());
+            Assert.True(evt.Properties.ContainsKey("ClientIp"));
+            Assert.Equal(IPAddress.Broadcast.ToString(), evt.Properties["ClientIp"].LiteralValue());
         }
     }
 }

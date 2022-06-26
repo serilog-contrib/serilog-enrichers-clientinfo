@@ -68,15 +68,15 @@ namespace Serilog.Enrichers
         }
 
 #else
-     private string GetIpAddress()
-     {
-         var ipAddress = _contextAccessor.HttpContext?.Request?.Headers["X-forwarded-for"].FirstOrDefault();
+        private string GetIpAddress()
+        {
+            var ipAddress = _contextAccessor.HttpContext?.Request?.Headers[ClinetIpConfiguration.XForwardHeaderName].FirstOrDefault();
 
-         if (!string.IsNullOrEmpty(ipAddress))
-             return GetIpAddressFromProxy(ipAddress);
+            if (!string.IsNullOrEmpty(ipAddress))
+                return GetIpAddressFromProxy(ipAddress);
 
-         return _contextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
-     }
+            return _contextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+        }
 #endif
 
         private string GetIpAddressFromProxy(string proxifiedIpList)

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Serilog.Enrichers.ClientInfo</AssemblyName>
     <RootNamespace>Serilog</RootNamespace>
-    <TargetFrameworks>net452;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net462;netstandard2.0;netstandard2.1</TargetFrameworks>
     <LangVersion>7.3</LangVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
@@ -14,7 +14,7 @@
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.1'">
     <DefineConstants>NETCORE;NETSTANDARD;NETSTANDARD2_1</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net452'">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net462'">
     <DefineConstants>NET45;NETFULL</DefineConstants>
   </PropertyGroup>
 
@@ -26,7 +26,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="Serilog" Version="2.9.0" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452'">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462'">
     <Reference Include="System.Web" />
     <PackageReference Include="Serilog" Version="2.4.0" />
   </ItemGroup>
