@@ -39,12 +39,7 @@ namespace Serilog.Enrichers
                 return;
             }
 
-#if NETFULL
             var agentName = httpContext.Request.Headers["User-Agent"];
-#else
-            var agentName = httpContext.Request.Headers["User-Agent"];
-#endif
-
 
             var clientAgentProperty = new LogEventProperty(ClientAgentPropertyName, new ScalarValue(agentName));
             httpContext.Items.Add(ClientAgentItemKey, clientAgentProperty);
