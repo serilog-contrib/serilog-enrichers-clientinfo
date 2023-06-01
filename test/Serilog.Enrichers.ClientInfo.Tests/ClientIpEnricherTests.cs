@@ -17,11 +17,16 @@ namespace Serilog.Enrichers.ClientInfo.Tests
             _contextAccessor.HttpContext.Returns(httpContext);
         }
 
-        [Fact]
-        public void When_Enrich_Log_Event_With_IpEnricher_Should_Contain_ClientIp_Property()
+        [Theory]
+        [InlineData("::1")]
+        [InlineData("192.168.1.1")]
+        [InlineData("2001:0db8:85a3:0000:0000:8a2e:0370:7334")]
+        [InlineData("2001:db8:85a3:8d3:1319:8a2e:370:7348")]
+        public void When_Enrich_Log_Event_With_IpEnricher_Should_Contain_ClientIp_Property(string ip)
         {
             // Arrange
-            _contextAccessor.HttpContext.Connection.RemoteIpAddress = IPAddress.Parse("::1");
+            var ipAddress = IPAddress.Parse(ip);
+            _contextAccessor.HttpContext.Connection.RemoteIpAddress = ipAddress;
 
             var ipEnricher = new ClientIpEnricher(_contextAccessor);
 
@@ -37,7 +42,7 @@ namespace Serilog.Enrichers.ClientInfo.Tests
             // Assert
             Assert.NotNull(evt);
             Assert.True(evt.Properties.ContainsKey("ClientIp"));
-            Assert.Equal("::1", evt.Properties["ClientIp"].LiteralValue());
+            Assert.Equal(ipAddress.ToString(), evt.Properties["ClientIp"].LiteralValue());
         }
 
         [Fact]
@@ -63,12 +68,17 @@ namespace Serilog.Enrichers.ClientInfo.Tests
             Assert.Equal(IPAddress.Loopback.ToString(), evt.Properties["ClientIp"].LiteralValue());
         }
 
-        [Fact]
-        public void When_Enrich_Log_Event_With_IpEnricher_AndRequest_Contain_ForwardHeader_Should_Read_ClientIp_Value_From_Header_Value()
+        [Theory]
+        [InlineData("::1")]
+        [InlineData("192.168.1.1")]
+        [InlineData("2001:0db8:85a3:0000:0000:8a2e:0370:7334")]
+        [InlineData("2001:db8:85a3:8d3:1319:8a2e:370:7348")]
+        public void When_Enrich_Log_Event_With_IpEnricher_AndRequest_Contain_ForwardHeader_Should_Read_ClientIp_Value_From_Header_Value(string ip)
         {
             //Arrange
+            var ipAddress = IPAddress.Parse(ip);
             _contextAccessor.HttpContext.Connection.RemoteIpAddress = IPAddress.Loopback;
-            _contextAccessor.HttpContext.Request.Headers.Add(ClinetIpConfiguration.XForwardHeaderName, IPAddress.Broadcast.ToString());
+            _contextAccessor.HttpContext.Request.Headers.Add(ClinetIpConfiguration.XForwardHeaderName, ipAddress.ToString());
 
             var ipEnricher = new ClientIpEnricher(_contextAccessor);
 
@@ -84,7 +94,7 @@ namespace Serilog.Enrichers.ClientInfo.Tests
             // Assert
             Assert.NotNull(evt);
             Assert.True(evt.Properties.ContainsKey("ClientIp"));
-            Assert.Equal(IPAddress.Broadcast.ToString(), evt.Properties["ClientIp"].LiteralValue());
+            Assert.Equal(ipAddress.ToString(), evt.Properties["ClientIp"].LiteralValue());
         }
 
         [Fact]

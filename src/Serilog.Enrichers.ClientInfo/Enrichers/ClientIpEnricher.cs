@@ -1,6 +1,5 @@
 ﻿using Serilog.Core;
 using Serilog.Events;
-using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -72,10 +71,9 @@ namespace Serilog.Enrichers
         {
             var ipAddress = _contextAccessor.HttpContext?.Request?.Headers[ClinetIpConfiguration.XForwardHeaderName].FirstOrDefault();
 
-            if (!string.IsNullOrEmpty(ipAddress))
-                return GetIpAddressFromProxy(ipAddress);
-
-            return _contextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+            return !string.IsNullOrEmpty(ipAddress)
+                ? GetIpAddressFromProxy(ipAddress)
+                : _contextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
         }
 #endif
 
@@ -83,15 +81,7 @@ namespace Serilog.Enrichers
         {
             var addresses = proxifiedIpList.Split(',');
 
-            if (addresses.Length != 0)
-            {
-                // If IP contains port, it will be after the last : (IPv6 uses : as delimiter and could have more of them)
-                return addresses[0].Contains(":")
-                    ? addresses[0].Substring(0, addresses[0].LastIndexOf(":", StringComparison.Ordinal))
-                    : addresses[0];
-            }
-
-            return string.Empty;
+            return addresses.Length == 0 ? string.Empty : addresses[0].Trim();
         }
     }
 }
