@@ -20,16 +20,18 @@ namespace Serilog.Enrichers
     {
         private const string IpAddressPropertyName = "ClientIp";
         private const string IpAddressItemKey = "Serilog_ClientIp";
+        private readonly string _forwardHeaderKey;
 
         private readonly IHttpContextAccessor _contextAccessor;
 
-        public ClientIpEnricher()
+        public ClientIpEnricher(string forwardHeaderKey)
+            : this(forwardHeaderKey, new HttpContextAccessor())
         {
-            _contextAccessor = new HttpContextAccessor();
         }
 
-        internal ClientIpEnricher(IHttpContextAccessor contextAccessor)
+        internal ClientIpEnricher(string forwardHeaderKey, IHttpContextAccessor contextAccessor)
         {
+            _forwardHeaderKey = forwardHeaderKey;
             _contextAccessor = contextAccessor;
         }
 
@@ -70,7 +72,7 @@ namespace Serilog.Enrichers
 #else
         private string GetIpAddress()
         {
-            var ipAddress = _contextAccessor.HttpContext?.Request?.Headers[ClinetIpConfiguration.XForwardHeaderName].FirstOrDefault();
+            var ipAddress = _contextAccessor.HttpContext?.Request?.Headers[_forwardHeaderKey].FirstOrDefault();
 
             if (!string.IsNullOrEmpty(ipAddress))
                 return GetIpAddressFromProxy(ipAddress);
@@ -85,7 +87,8 @@ namespace Serilog.Enrichers
 
             if (addresses.Length != 0)
             {
-                // If IP contains port, it will be after the last : (IPv6 uses : as delimiter and could have more of them)
+                // If IP contains port, it will be after the last : (IPv6 uses : as delimiter and
+                // could have more of them)
                 return addresses[0].Contains(":")
                     ? addresses[0].Substring(0, addresses[0].LastIndexOf(":", StringComparison.Ordinal))
                     : addresses[0];

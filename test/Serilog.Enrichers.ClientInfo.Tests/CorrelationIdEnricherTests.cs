@@ -19,7 +19,7 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact]
-    public void EnrichLogWithCorrelationIdEnricher_WhenHttpRequestContainCorrelationHeader_ShouldCreateCorrelationIdProperty()
+    public void EnrichLogWithCorrelationId_WhenHttpRequestContainCorrelationHeader_ShouldCreateCorrelationIdProperty()
     {
         // Arrange
         var correlationId = Guid.NewGuid().ToString();
@@ -43,7 +43,7 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact]
-    public void EnrichLogWithCorrelationIdEnricher_WhenHttpRequestContainCorrelationHeader_ShouldCreateCorrelationIdPropertyHasValue()
+    public void EnrichLogWithCorrelationId_WhenHttpRequestContainCorrelationHeader_ShouldCreateCorrelationIdPropertyHasValue()
     {
         // Arrange
         var correlationId = Guid.NewGuid().ToString();
@@ -67,7 +67,7 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact]
-    public void EnrichLogWithCorrelationIdEnricher_WhenHttpRequestNotContainCorrelationHeaderAndAddDefaultValueIsFalse_ShouldCreateCorrelationIdPropertyWithNoValue()
+    public void EnrichLogWithCorrelationId_WhenHttpRequestNotContainCorrelationHeaderAndAddDefaultValueIsFalse_ShouldCreateCorrelationIdPropertyWithNoValue()
     {
         // Arrange
         var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
@@ -88,7 +88,7 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact]
-    public void EnrichLogWithCorrelationIdEnricher_WhenHttpRequestNotContainCorrelationHeaderAndAddDefaultValueIsTrue_ShouldCreateCorrelationIdPropertyHasValue()
+    public void EnrichLogWithCorrelationId_WhenHttpRequestNotContainCorrelationHeaderAndAddDefaultValueIsTrue_ShouldCreateCorrelationIdPropertyHasValue()
     {
         // Arrange
         var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, true, _contextAccessor);
@@ -109,7 +109,7 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact]
-    public void WithCorrelationId_ThenLoggerIsCalled_ShouldNotThrowException()
+    public void WithClientIp_ThenLoggerIsCalled_ShouldNotThrowException()
     {
         // Arrange
         var logger = new LoggerConfiguration()

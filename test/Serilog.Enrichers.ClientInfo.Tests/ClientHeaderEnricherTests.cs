@@ -18,7 +18,7 @@ public class ClientHeaderEnricherTests
     }
 
     [Fact]
-    public void EnrichLogWithClientHeaderEnricher_WhenHttpRequestContainHeader_ShouldCreateHeaderValueProperty()
+    public void EnrichLogWithClientHeader_WhenHttpRequestContainHeader_ShouldCreateHeaderValueProperty()
     {
         // Arrange
         var headerKey = "RequestId";
@@ -48,7 +48,7 @@ public class ClientHeaderEnricherTests
     {
         // Arrange
         var headerKey1 = "Header1";
-        var headerKey2 = "Header2";
+        var headerKey2 = "Header-2";
         var headerValue1 = Guid.NewGuid().ToString();
         var headerValue2 = Guid.NewGuid().ToString();
         _contextAccessor.HttpContext.Request.Headers.Add(headerKey1, headerValue1);
@@ -72,12 +72,12 @@ public class ClientHeaderEnricherTests
         Assert.NotNull(evt);
         Assert.True(evt.Properties.ContainsKey(headerKey1));
         Assert.Equal(headerValue1, evt.Properties[headerKey1].LiteralValue().ToString());
-        Assert.True(evt.Properties.ContainsKey(headerKey2));
-        Assert.Equal(headerValue2, evt.Properties[headerKey2].LiteralValue().ToString());
+        Assert.True(evt.Properties.ContainsKey(headerKey2.Replace("-", "")));
+        Assert.Equal(headerValue2, evt.Properties[headerKey2.Replace("-", "")].LiteralValue().ToString());
     }
 
     [Fact]
-    public void EnrichLogWithClientHeaderEnricher_WhenHttpRequestNotContainHeader_ShouldCreateHeaderValuePropertyWithNoValue()
+    public void EnrichLogWithClientHeader_WhenHttpRequestNotContainHeader_ShouldCreateHeaderValuePropertyWithNoValue()
     {
         // Arrange
         var headerKey = "RequestId";
@@ -97,5 +97,21 @@ public class ClientHeaderEnricherTests
         Assert.NotNull(evt);
         Assert.True(evt.Properties.ContainsKey(headerKey));
         Assert.Null(evt.Properties[headerKey].LiteralValue());
+    }
+
+    [Fact]
+    public void WithRequestHeader_ThenLoggerIsCalled_ShouldNotThrowException()
+    {
+        // Arrange
+        var logger = new LoggerConfiguration()
+            .Enrich.WithRequestHeader("HeaderName")
+            .WriteTo.Sink(new DelegatingSink(e => { }))
+            .CreateLogger();
+
+        // Act
+        var exception = Record.Exception(() => logger.Information("LOG"));
+
+        // Assert
+        Assert.Null(exception);
     }
 }
