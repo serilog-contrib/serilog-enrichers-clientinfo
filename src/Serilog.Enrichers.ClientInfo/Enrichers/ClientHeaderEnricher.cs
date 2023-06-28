@@ -15,6 +15,7 @@ namespace Serilog.Enrichers;
 public class ClientHeaderEnricher : ILogEventEnricher
 {
     private readonly string _clientHeaderItemKey;
+    private readonly string _propertyName;
     private readonly string _headerKey;
     private readonly IHttpContextAccessor _contextAccessor;
 
@@ -26,6 +27,7 @@ public class ClientHeaderEnricher : ILogEventEnricher
     internal ClientHeaderEnricher(string headerKey, IHttpContextAccessor contextAccessor)
     {
         _headerKey = headerKey;
+        _propertyName = headerKey.Replace("-", "");
         _clientHeaderItemKey = $"Serilog_{headerKey}";
         _contextAccessor = contextAccessor;
     }
@@ -50,7 +52,7 @@ public class ClientHeaderEnricher : ILogEventEnricher
         var headerValue = httpContext.Request.Headers[_headerKey].ToString();
         headerValue = string.IsNullOrWhiteSpace(headerValue) ? null : headerValue;
 
-        var logProperty = new LogEventProperty(_headerKey, new ScalarValue(headerValue));
+        var logProperty = new LogEventProperty(_propertyName, new ScalarValue(headerValue));
         httpContext.Items.Add(_clientHeaderItemKey, logProperty);
 
         logEvent.AddPropertyIfAbsent(logProperty);
