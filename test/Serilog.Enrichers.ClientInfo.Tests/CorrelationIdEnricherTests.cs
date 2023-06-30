@@ -9,6 +9,7 @@ namespace Serilog.Enrichers.ClientInfo.Tests;
 public class CorrelationIdEnricherTests
 {
     private const string HeaderKey = "x-correlation-id";
+    private const string LogPropertyName = "CorrelationId";
     private readonly IHttpContextAccessor _contextAccessor;
 
     public CorrelationIdEnricherTests()
@@ -24,7 +25,6 @@ public class CorrelationIdEnricherTests
         // Arrange
         var correlationId = Guid.NewGuid().ToString();
         _contextAccessor.HttpContext.Request.Headers.Add(HeaderKey, correlationId);
-
         var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
 
         LogEvent evt = null;
@@ -38,8 +38,8 @@ public class CorrelationIdEnricherTests
 
         // Assert
         Assert.NotNull(evt);
-        Assert.True(evt.Properties.ContainsKey(HeaderKey));
-        Assert.Equal(correlationId, evt.Properties[HeaderKey].LiteralValue().ToString());
+        Assert.True(evt.Properties.ContainsKey(LogPropertyName));
+        Assert.Equal(correlationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
     }
 
     [Fact]
@@ -62,8 +62,8 @@ public class CorrelationIdEnricherTests
 
         // Assert
         Assert.NotNull(evt);
-        Assert.True(evt.Properties.ContainsKey(HeaderKey));
-        Assert.Equal(correlationId, evt.Properties[HeaderKey].LiteralValue().ToString());
+        Assert.True(evt.Properties.ContainsKey(LogPropertyName));
+        Assert.Equal(correlationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
     }
 
     [Fact]
@@ -83,8 +83,8 @@ public class CorrelationIdEnricherTests
 
         // Assert
         Assert.NotNull(evt);
-        Assert.True(evt.Properties.ContainsKey(HeaderKey));
-        Assert.Null(evt.Properties[HeaderKey].LiteralValue());
+        Assert.True(evt.Properties.ContainsKey(LogPropertyName));
+        Assert.Null(evt.Properties[LogPropertyName].LiteralValue());
     }
 
     [Fact]
@@ -104,8 +104,8 @@ public class CorrelationIdEnricherTests
 
         // Assert
         Assert.NotNull(evt);
-        Assert.True(evt.Properties.ContainsKey(HeaderKey));
-        Assert.NotNull(evt.Properties[HeaderKey].LiteralValue().ToString());
+        Assert.True(evt.Properties.ContainsKey(LogPropertyName));
+        Assert.NotNull(evt.Properties[LogPropertyName].LiteralValue().ToString());
     }
 
     [Fact]
