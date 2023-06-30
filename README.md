@@ -58,7 +58,6 @@ or
     "MinimumLevel": "Debug",
     "Using":  [ "Serilog.Enrichers.ClientInfo" ],
     "Enrich": [ 
-      "WithClientAgent",
       {
         "Name": "WithClientIp",
         "Args": {
@@ -85,7 +84,6 @@ or
     "MinimumLevel": "Debug",
     "Using":  [ "Serilog.Enrichers.ClientInfo" ],
     "Enrich": [ 
-      "WithClientAgent",
       {
         "Name": "WithCorrelationId",
         "Args": {
