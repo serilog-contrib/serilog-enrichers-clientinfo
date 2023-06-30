@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29411.108
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{84342DE9-9E61-4802-9E77-305CFFD0D2B5}"
 EndProject
@@ -9,7 +9,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F5A0A932-D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serilog.Enrichers.ClientInfo", "src\Serilog.Enrichers.ClientInfo\Serilog.Enrichers.ClientInfo.csproj", "{232EFC21-2E8D-44B0-8506-C0DCE122AAA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Enrichers.ClientInfo.Tests", "test\Serilog.Enrichers.ClientInfo.Tests\Serilog.Enrichers.ClientInfo.Tests.csproj", "{A6AFC898-47F8-4F6D-9391-C79689885B7A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serilog.Enrichers.ClientInfo.Tests", "test\Serilog.Enrichers.ClientInfo.Tests\Serilog.Enrichers.ClientInfo.Tests.csproj", "{A6AFC898-47F8-4F6D-9391-C79689885B7A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{931596BA-056D-4E8C-9FED-6C60C0D1AB83}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		LICENSE = LICENSE
+		README.md = README.md
+		Serilog.Enrichers.ClientInfo.nuspec = Serilog.Enrichers.ClientInfo.nuspec
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

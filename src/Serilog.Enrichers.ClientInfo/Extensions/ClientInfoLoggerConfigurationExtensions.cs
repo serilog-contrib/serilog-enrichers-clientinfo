@@ -23,7 +23,7 @@ public static class ClientInfoLoggerConfigurationExtensions
     ///   header information.
     /// </summary>
     /// <param name="enrichmentConfiguration">The enrichment configuration.</param>
-    /// <param name="forwardHeaderName">
+    /// <param name="headerName">
     ///   Set the 'X-Forwarded-For' header in case if service is behind proxy server. Default value
     ///   is 'x-forwarded-for'.
     /// </param>
@@ -31,14 +31,14 @@ public static class ClientInfoLoggerConfigurationExtensions
     /// <returns>The logger configuration so that multiple calls can be chained.</returns>
     public static LoggerConfiguration WithClientIp(
         this LoggerEnrichmentConfiguration enrichmentConfiguration,
-        string forwardHeaderName = "x-forwarded-for")
+        string headerName = "x-forwarded-for")
     {
         if (enrichmentConfiguration == null)
         {
             throw new ArgumentNullException(nameof(enrichmentConfiguration));
         }
 
-        return enrichmentConfiguration.With(new ClientIpEnricher(forwardHeaderName));
+        return enrichmentConfiguration.With(new ClientIpEnricher(headerName));
     }
 
     /// <summary>
