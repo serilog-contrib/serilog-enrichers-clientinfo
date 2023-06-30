@@ -134,6 +134,7 @@ To include logged headers in `OutputTemplate`, the header name without `-` shoul
 ```csharp
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
+    .Enrich.WithRequestHeader("Cache-Contol")
     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] {Level:u3} {CacheContol} {Message:lj}{NewLine}{Exception}")
 ```
 
