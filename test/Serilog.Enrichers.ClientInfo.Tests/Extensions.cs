@@ -1,12 +1,11 @@
 ﻿using Serilog.Events;
 
-namespace Serilog.Enrichers.ClientInfo.Tests
+namespace Serilog.Enrichers.ClientInfo.Tests;
+
+internal static class Extensions
 {
-    internal static class Extensions
+    public static object LiteralValue(this LogEventPropertyValue @this)
     {
-        public static object LiteralValue(this LogEventPropertyValue @this)
-        {
-            return ((ScalarValue)@this).Value;
-        }
+        return ((ScalarValue)@this).Value;
     }
 }

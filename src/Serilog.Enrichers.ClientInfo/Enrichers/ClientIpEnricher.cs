@@ -19,16 +19,18 @@ namespace Serilog.Enrichers
     {
         private const string IpAddressPropertyName = "ClientIp";
         private const string IpAddressItemKey = "Serilog_ClientIp";
+        private readonly string _forwardHeaderKey;
 
         private readonly IHttpContextAccessor _contextAccessor;
 
-        public ClientIpEnricher()
+        public ClientIpEnricher(string forwardHeaderKey)
+            : this(forwardHeaderKey, new HttpContextAccessor())
         {
-            _contextAccessor = new HttpContextAccessor();
         }
 
-        internal ClientIpEnricher(IHttpContextAccessor contextAccessor)
+        internal ClientIpEnricher(string forwardHeaderKey, IHttpContextAccessor contextAccessor)
         {
+            _forwardHeaderKey = forwardHeaderKey;
             _contextAccessor = contextAccessor;
         }
 
@@ -69,7 +71,7 @@ namespace Serilog.Enrichers
 #else
         private string GetIpAddress()
         {
-            var ipAddress = _contextAccessor.HttpContext?.Request?.Headers[ClinetIpConfiguration.XForwardHeaderName].FirstOrDefault();
+            var ipAddress = _contextAccessor.HttpContext?.Request?.Headers[_forwardHeaderKey].FirstOrDefault();
 
             return !string.IsNullOrEmpty(ipAddress)
                 ? GetIpAddressFromProxy(ipAddress)

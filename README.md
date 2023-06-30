@@ -1,5 +1,5 @@
 # serilog-enrichers-clientinfo [![NuGet](http://img.shields.io/nuget/v/Serilog.Enrichers.ClientInfo.svg?style=flat)](https://www.nuget.org/packages/Serilog.Enrichers.ClientInfo/)
-Enrich logs with client IP and UserAgent.
+Enrich logs with client IP, Correlation Id and HTTP request headers.
 
 Install the _Serilog.Enrichers.ClientInfo_ [NuGet package](https://www.nuget.org/packages/Serilog.Enrichers.ClientInfo/)
 
@@ -16,7 +16,8 @@ Apply the enricher to your `LoggerConfiguration` in code:
 ```csharp
 Log.Logger = new LoggerConfiguration()
     .Enrich.WithClientIp()
-    .Enrich.WithClientAgent()
+    .Enrich.WithCorrelationId()
+    .Enrich.WithRequestHeader("Header-Name1")
     // ...other configuration...
     .CreateLogger();
 ```
@@ -27,7 +28,14 @@ or in `appsettings.json` file:
   "Serilog": {
     "MinimumLevel": "Debug",
     "Using":  [ "Serilog.Enrichers.ClientInfo" ],
-    "Enrich": [ "WithClientIp", "WithClientAgent"],
+    "Enrich": [ 
+      "WithClientIp", 
+      "WithCorrelationId",
+      { 
+          "Name": "WithRequestHeader", 
+          "Args": { "headerName": "Cache-Control"}
+      }
+    ],
     "WriteTo": [
       { "Name": "Console" }
     ]
@@ -35,14 +43,15 @@ or in `appsettings.json` file:
 }
 ```
 
-The `WithClientIp()` enricher will add a `ClientIp` property and the `WithClientAgent()` enricher will add a `ClientAgent` property to produced events.
+---
 
-For `ClientIp` enricher you can configure the `X-forwarded-for` header if the proxy server uses a different header to forward IP address.
+For `ClientIp` enricher you can configure the `x-forwarded-for` header if the proxy server uses a different header to forward the IP address.
 ```csharp
 Log.Logger = new LoggerConfiguration()
-    .Enrich.WithClientIp(xForwardHeaderName: "CF-Connecting-IP")
+    .Enrich.WithClientIp(headerName: "CF-Connecting-IP")
     ...
 ```
+or
 ```json
 {
   "Serilog": {
@@ -53,12 +62,79 @@ Log.Logger = new LoggerConfiguration()
       {
         "Name": "WithClientIp",
         "Args": {
-          "xForwardHeaderName": "CF-Connecting-IP"
+          "headerName": "CF-Connecting-IP"
         }
       }
     ],
   }
 }
+```
+
+For `CorrelationId` enricher you can:
+- Configure the header name and default header name is `x-correlation-id`
+- Set value for correlation id when the header is not available in request header collection and the default value is false
+```csharp
+Log.Logger = new LoggerConfiguration()
+    .Enrich.WithCorrelationId(headerName: "correlation-id", addValueIfHeaderAbsence: true)
+    ...
+```
+or
+```json
+{
+  "Serilog": {
+    "MinimumLevel": "Debug",
+    "Using":  [ "Serilog.Enrichers.ClientInfo" ],
+    "Enrich": [ 
+      "WithClientAgent",
+      {
+        "Name": "WithCorrelationId",
+        "Args": {
+          "headerName": "correlation-id"
+          "addValueIfHeaderAbsence": true
+        }
+      }
+    ],
+  }
+}
+```
+
+You can use multiple `WithRequestHeader` to log different request headers.
+```csharp
+Log.Logger = new LoggerConfiguration()
+    .Enrich.WithRequestHeader(headerName: "header-name-1")
+    .Enrich.WithRequestHeader(headerName: "header-name-2")
+    ...
+```
+or
+```json
+{
+  "Serilog": {
+    "MinimumLevel": "Debug",
+    "Using":  [ "Serilog.Enrichers.ClientInfo" ],
+    "Enrich": [ 
+      {
+        "Name": "WithRequestHeader",
+        "Args": {
+          "headerName": "Cache-Control"
+        }
+      },
+      {
+        "Name": "WithRequestHeader",
+        "Args": {
+          "headerName": "Connection"
+        }
+      }
+    ],
+  }
+}
+```
+
+#### Note
+To include logged headers in `OutputTemplate`, the header name without `-` should be used. For example, if the header name is `Cache-Contol`, you should use `CacheContol`.
+```csharp
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] {Level:u3} {CacheContol} {Message:lj}{NewLine}{Exception}")
 ```
 
 ## Installing into an ASP.NET Core Web Application
@@ -81,9 +157,10 @@ namespace MyWebApp
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
-                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3} {ClientIp} {ClientAgent}] {Message:lj}{NewLine}{Exception}")
+                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] {Level:u3} CLient IP: {ClientIp} Correlation Id: {CorrelationId} header-name: {headername} {Message:lj}{NewLine}{Exception}")
                 .Enrich.WithClientIp()
-                .Enrich.WithClientAgent()
+                .Enrich.WithCorrelationId()
+                .Enrich.WithRequestHeader("header-name")
                 .CreateLogger();
         }
 
