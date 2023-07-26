@@ -19,6 +19,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{931596
 		Serilog.Enrichers.ClientInfo.nuspec = Serilog.Enrichers.ClientInfo.nuspec
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{A170BD74-8542-4880-BC6F-283D03C6AA6D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleWebApp", "sample\SampleWebApp\SampleWebApp.csproj", "{3C3C0104-969D-4FA3-B5DE-8A8A0A91E455}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,10 @@ Global
 		{A6AFC898-47F8-4F6D-9391-C79689885B7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6AFC898-47F8-4F6D-9391-C79689885B7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6AFC898-47F8-4F6D-9391-C79689885B7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C3C0104-969D-4FA3-B5DE-8A8A0A91E455}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C3C0104-969D-4FA3-B5DE-8A8A0A91E455}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C3C0104-969D-4FA3-B5DE-8A8A0A91E455}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C3C0104-969D-4FA3-B5DE-8A8A0A91E455}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -40,6 +48,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{232EFC21-2E8D-44B0-8506-C0DCE122AAA2} = {84342DE9-9E61-4802-9E77-305CFFD0D2B5}
 		{A6AFC898-47F8-4F6D-9391-C79689885B7A} = {F5A0A932-DD02-47C1-B81E-3F34F879FEEF}
+		{3C3C0104-969D-4FA3-B5DE-8A8A0A91E455} = {A170BD74-8542-4880-BC6F-283D03C6AA6D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {785F0E90-8DC5-4003-AD7A-33DE806F3B3A}

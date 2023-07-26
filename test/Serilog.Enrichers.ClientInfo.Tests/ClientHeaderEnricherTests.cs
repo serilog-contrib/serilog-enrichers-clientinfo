@@ -48,7 +48,7 @@ public class ClientHeaderEnricherTests
     {
         // Arrange
         var headerKey1 = "Header1";
-        var headerKey2 = "Header-2";
+        var headerKey2 = "User-Agent";
         var headerValue1 = Guid.NewGuid().ToString();
         var headerValue2 = Guid.NewGuid().ToString();
         _contextAccessor.HttpContext.Request.Headers.Add(headerKey1, headerValue1);
