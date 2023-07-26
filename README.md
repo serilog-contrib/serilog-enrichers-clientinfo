@@ -33,7 +33,7 @@ or in `appsettings.json` file:
       "WithCorrelationId",
       { 
           "Name": "WithRequestHeader", 
-          "Args": { "headerName": "Cache-Control"}
+          "Args": { "headerName": "User-Agent"}
       }
     ],
     "WriteTo": [
@@ -113,7 +113,7 @@ or
       {
         "Name": "WithRequestHeader",
         "Args": {
-          "headerName": "Cache-Control"
+          "headerName": "User-Agent"
         }
       },
       {
@@ -128,12 +128,12 @@ or
 ```
 
 #### Note
-To include logged headers in `OutputTemplate`, the header name without `-` should be used. For example, if the header name is `Cache-Contol`, you should use `CacheContol`.
+To include logged headers in `OutputTemplate`, the header name without `-` should be used. For example, if the header name is `User-Agent`, you should use `UserAgent`.
 ```csharp
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
-    .Enrich.WithRequestHeader("Cache-Contol")
-    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] {Level:u3} {CacheContol} {Message:lj}{NewLine}{Exception}")
+    .Enrich.WithRequestHeader("User-Agent")
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] {Level:u3} {UserAgent} {Message:lj}{NewLine}{Exception}")
 ```
 
 ## Installing into an ASP.NET Core Web Application
