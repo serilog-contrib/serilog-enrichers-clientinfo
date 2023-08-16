@@ -28,11 +28,11 @@ or in `appsettings.json` file:
   "Serilog": {
     "MinimumLevel": "Debug",
     "Using":  [ "Serilog.Enrichers.ClientInfo" ],
-    "Enrich": [ 
-      "WithClientIp", 
+    "Enrich": [
+      "WithClientIp",
       "WithCorrelationId",
-      { 
-          "Name": "WithRequestHeader", 
+      {
+          "Name": "WithRequestHeader",
           "Args": { "headerName": "User-Agent"}
       }
     ],
@@ -57,7 +57,7 @@ or
   "Serilog": {
     "MinimumLevel": "Debug",
     "Using":  [ "Serilog.Enrichers.ClientInfo" ],
-    "Enrich": [ 
+    "Enrich": [
       {
         "Name": "WithClientIp",
         "Args": {
@@ -83,7 +83,7 @@ or
   "Serilog": {
     "MinimumLevel": "Debug",
     "Using":  [ "Serilog.Enrichers.ClientInfo" ],
-    "Enrich": [ 
+    "Enrich": [
       {
         "Name": "WithCorrelationId",
         "Args": {
@@ -109,7 +109,7 @@ or
   "Serilog": {
     "MinimumLevel": "Debug",
     "Using":  [ "Serilog.Enrichers.ClientInfo" ],
-    "Enrich": [ 
+    "Enrich": [
       {
         "Name": "WithRequestHeader",
         "Args": {
@@ -120,6 +120,13 @@ or
         "Name": "WithRequestHeader",
         "Args": {
           "headerName": "Connection"
+        }
+      },
+      {
+        "Name": "WithRequestHeader",
+        "Args": {
+          "headerName": "Content-Length",
+          "propertyName": "RequestLength"
         }
       }
     ],
