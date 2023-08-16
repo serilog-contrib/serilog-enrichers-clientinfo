@@ -167,6 +167,7 @@ namespace MyWebApp
                 .Enrich.WithClientIp()
                 .Enrich.WithCorrelationId()
                 .Enrich.WithRequestHeader("header-name")
+                .Enrich.WithRequestHeader("another-header-name", "some-property-name")
                 .CreateLogger();
         }
 
