@@ -45,6 +45,7 @@ or in `appsettings.json` file:
 
 ---
 
+### ClientIp
 For `ClientIp` enricher you can configure the `x-forwarded-for` header if the proxy server uses a different header to forward the IP address.
 ```csharp
 Log.Logger = new LoggerConfiguration()
@@ -68,7 +69,7 @@ or
   }
 }
 ```
-
+### CorrelationId
 For `CorrelationId` enricher you can:
 - Configure the header name and default header name is `x-correlation-id`
 - Set value for correlation id when the header is not available in request header collection and the default value is false
@@ -95,12 +96,13 @@ or
   }
 }
 ```
-
-You can use multiple `WithRequestHeader` to log different request headers.
+### RequestHeader
+You can use multiple `WithRequestHeader` to log different request headers. `WithRequestHeader` accepts two parameters; The first parameter `headerName` is the header name to log 
+and the second parameter is `propertyName` which is the log property name.
 ```csharp
 Log.Logger = new LoggerConfiguration()
     .Enrich.WithRequestHeader(headerName: "header-name-1")
-    .Enrich.WithRequestHeader(headerName: "header-name-2")
+    .Enrich.WithRequestHeader(headerName: "header-name-2", propertyName: "SomeHeaderName")
     ...
 ```
 or
@@ -135,7 +137,7 @@ or
 ```
 
 #### Note
-To include logged headers in `OutputTemplate`, the header name without `-` should be used. For example, if the header name is `User-Agent`, you should use `UserAgent`.
+To include logged headers in `OutputTemplate`, the header name without `-` should be used if you haven't set the log property name. For example, if the header name is `User-Agent`, you should use `UserAgent`.
 ```csharp
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
@@ -167,7 +169,7 @@ namespace MyWebApp
                 .Enrich.WithClientIp()
                 .Enrich.WithCorrelationId()
                 .Enrich.WithRequestHeader("header-name")
-                .Enrich.WithRequestHeader("another-header-name", "some-property-name")
+                .Enrich.WithRequestHeader("another-header-name", "SomePropertyName")
                 .CreateLogger();
         }
 
