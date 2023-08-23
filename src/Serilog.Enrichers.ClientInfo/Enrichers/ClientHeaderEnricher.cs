@@ -19,15 +19,17 @@ public class ClientHeaderEnricher : ILogEventEnricher
     private readonly string _headerKey;
     private readonly IHttpContextAccessor _contextAccessor;
 
-    public ClientHeaderEnricher(string headerKey)
-        : this(headerKey, new HttpContextAccessor())
+    public ClientHeaderEnricher(string headerKey, string propertyName)
+        : this(headerKey, propertyName, new HttpContextAccessor())
     {
     }
 
-    internal ClientHeaderEnricher(string headerKey, IHttpContextAccessor contextAccessor)
+    internal ClientHeaderEnricher(string headerKey, string propertyName, IHttpContextAccessor contextAccessor)
     {
         _headerKey = headerKey;
-        _propertyName = headerKey.Replace("-", "");
+        _propertyName = string.IsNullOrWhiteSpace(propertyName) 
+            ? headerKey.Replace("-", "")
+            : propertyName;
         _clientHeaderItemKey = $"Serilog_{headerKey}";
         _contextAccessor = contextAccessor;
     }
