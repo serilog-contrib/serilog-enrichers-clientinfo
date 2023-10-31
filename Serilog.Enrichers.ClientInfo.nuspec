@@ -6,7 +6,7 @@
 		<title>Serilog.Enrichers.ClientInfo</title>
 		<authors>mo.esmp</authors>
 		<owners>mo.esmp</owners>
-		<projectUrl>https://github.com/mo-esmp/serilog-enrichers-clientinfo</projectUrl>
+		<projectUrl>https://github.com/serilog-contrib/serilog-enrichers-clientinfo</projectUrl>
 		<license type="expression">MIT</license>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Enrich logs with client IP, CorrelationId and HTTP request headers.</description>
