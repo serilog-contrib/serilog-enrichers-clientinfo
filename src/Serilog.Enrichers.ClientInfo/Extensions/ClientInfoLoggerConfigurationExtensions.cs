@@ -91,6 +91,6 @@ public static class ClientInfoLoggerConfigurationExtensions
             throw new ArgumentNullException(nameof(headerName));
         }
 
-        return enrichmentConfiguration.With(new ClientHeaderEnricher(propertyName, headerName));
+        return enrichmentConfiguration.With(new ClientHeaderEnricher(headerName, propertyName));
     }
 }
