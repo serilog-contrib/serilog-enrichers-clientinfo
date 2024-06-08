@@ -109,6 +109,54 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact]
+    public void EnrichLogWithCorrelationId_WhenHttpResponseContainsCorrelationIdHeader_ShouldCreateCorrelationIdProperty()
+    {
+        // Arrange
+        var correlationId = Guid.NewGuid().ToString();
+        _contextAccessor.HttpContext.Response.Headers.Add(HeaderKey, correlationId);
+        var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
+
+        LogEvent evt = null;
+        var log = new LoggerConfiguration()
+            .Enrich.With(correlationIdEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information(@"Has a correlation id.");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.True(evt.Properties.ContainsKey(LogPropertyName));
+        Assert.Equal(correlationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
+    }
+
+    [Fact]
+    public void EnrichLogWithCorrelationId_WhenHttpRequestAndResponseContainCorrelationIdHeader_ShouldCreateCorrelationIdPropertyFromHttpRequest()
+    {
+        // Arrange
+        var requestCorrelationId = Guid.NewGuid().ToString();
+        var responseCorrelationId = Guid.NewGuid().ToString();
+        _contextAccessor.HttpContext.Request.Headers.Add(HeaderKey, requestCorrelationId);
+        _contextAccessor.HttpContext.Response.Headers.Add(HeaderKey, responseCorrelationId);
+        var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
+
+        LogEvent evt = null;
+        var log = new LoggerConfiguration()
+            .Enrich.With(correlationIdEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information(@"Has a correlation id.");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.True(evt.Properties.ContainsKey(LogPropertyName));
+        Assert.Equal(requestCorrelationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
+    }
+
+    [Fact]
     public void WithClientIp_ThenLoggerIsCalled_ShouldNotThrowException()
     {
         // Arrange
