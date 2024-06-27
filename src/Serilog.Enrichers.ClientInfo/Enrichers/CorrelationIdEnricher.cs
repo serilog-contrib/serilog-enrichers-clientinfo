@@ -47,10 +47,27 @@ public class CorrelationIdEnricher : ILogEventEnricher
             return;
         }
 
-        var header = httpContext.Request.Headers[_headerKey].ToString();
-        var correlationId = !string.IsNullOrWhiteSpace(header)
-            ? header
-            : (_addValueIfHeaderAbsence ? Guid.NewGuid().ToString() : null);
+        var requestHeader = httpContext.Request.Headers[_headerKey];
+        var responseHeader = httpContext.Response.Headers[_headerKey];
+        
+        string correlationId;
+        
+        if (!string.IsNullOrWhiteSpace(requestHeader))
+        {
+            correlationId = requestHeader;
+        }
+        else if (!string.IsNullOrWhiteSpace(responseHeader))
+        {
+            correlationId = responseHeader;
+        }
+        else if (_addValueIfHeaderAbsence)
+        {
+            correlationId = Guid.NewGuid().ToString();
+        }
+        else
+        {
+            correlationId = null;
+        }
 
         var correlationIdProperty = new LogEventProperty(PropertyName, new ScalarValue(correlationId));
         logEvent.AddOrUpdateProperty(correlationIdProperty);
