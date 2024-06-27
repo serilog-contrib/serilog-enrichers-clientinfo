@@ -1,21 +1,26 @@
-using Microsoft.AspNetCore.Http;
-using NSubstitute;
 using Serilog.Events;
 using System.Net;
+using Serilog;
+using Serilog.Enrichers;
+using Serilog.Enrichers.ClientInfo.Tests;
 using Xunit;
 
-namespace Serilog.Enrichers.ClientInfo.Tests;
+#if NETFULL
 
-public class ClientIpEnricherTests
+using Serilog.Enrichers.ClientInfo.Accessors;
+
+#else
+using Microsoft.AspNetCore.Http;
+#endif
+
+public class ClientIpEnricherTests : TestBase
 {
     private const string ForwardHeaderKey = "x-forwarded-for";
     private readonly IHttpContextAccessor _contextAccessor;
 
     public ClientIpEnricherTests()
     {
-        var httpContext = new DefaultHttpContext();
-        _contextAccessor = Substitute.For<IHttpContextAccessor>();
-        _contextAccessor.HttpContext.Returns(httpContext);
+        _contextAccessor = GetMockHttpContextAccessor;
     }
 
     [Theory]
@@ -26,8 +31,9 @@ public class ClientIpEnricherTests
     public void EnrichLogWithClientIp_ShouldCreateClientIpPropertyWithValue(string ip)
     {
         // Arrange
-        var ipAddress = IPAddress.Parse(ip);
-        _contextAccessor.HttpContext.Connection.RemoteIpAddress = ipAddress;
+        //var ipAddress = IPAddress.Parse(ip);
+        //_contextAccessor.HttpContext.Connection.RemoteIpAddress = ipAddress;
+        SetIp(ip);
 
         var ipEnricher = new ClientIpEnricher(ForwardHeaderKey, _contextAccessor);
 
@@ -43,14 +49,16 @@ public class ClientIpEnricherTests
         // Assert
         Assert.NotNull(evt);
         Assert.True(evt.Properties.ContainsKey("ClientIp"));
-        Assert.Equal(ipAddress.ToString(), evt.Properties["ClientIp"].LiteralValue());
+        Assert.Equal(ip, evt.Properties["ClientIp"].LiteralValue());
     }
 
     [Fact]
     public void EnrichLogWithClientIp_WhenLogMoreThanOnce_ShouldReadClientIpValueFromHttpContextItems()
     {
         //Arrange
-        _contextAccessor.HttpContext.Connection.RemoteIpAddress = IPAddress.Loopback;
+        //_contextAccessor.HttpContext.Connection.RemoteIpAddress = IPAddress.Loopback;
+        var ip = IPAddress.Loopback.ToString();
+        SetIp(ip);
         var ipEnricher = new ClientIpEnricher(ForwardHeaderKey, _contextAccessor);
 
         LogEvent evt = null;
@@ -66,7 +74,7 @@ public class ClientIpEnricherTests
         // Assert
         Assert.NotNull(evt);
         Assert.True(evt.Properties.ContainsKey("ClientIp"));
-        Assert.Equal(IPAddress.Loopback.ToString(), evt.Properties["ClientIp"].LiteralValue());
+        Assert.Equal(ip, evt.Properties["ClientIp"].LiteralValue());
     }
 
     [Theory]
@@ -77,9 +85,8 @@ public class ClientIpEnricherTests
     public void EnrichLogWithClientIp_WhenRequestContainForwardHeader_ShouldCreateClientIpPropertyWithValue(string ip)
     {
         //Arrange
-        var ipAddress = IPAddress.Parse(ip);
-        _contextAccessor.HttpContext.Connection.RemoteIpAddress = IPAddress.Loopback;
-        _contextAccessor.HttpContext.Request.Headers.Add(ForwardHeaderKey, ipAddress.ToString());
+        SetIp(ip);
+        _contextAccessor.HttpContext.Request.Headers.Add(ForwardHeaderKey, ip);
 
         var ipEnricher = new ClientIpEnricher(ForwardHeaderKey, _contextAccessor);
 
@@ -95,7 +102,7 @@ public class ClientIpEnricherTests
         // Assert
         Assert.NotNull(evt);
         Assert.True(evt.Properties.ContainsKey("ClientIp"));
-        Assert.Equal(ipAddress.ToString(), evt.Properties["ClientIp"].LiteralValue());
+        Assert.Equal(ip, evt.Properties["ClientIp"].LiteralValue());
     }
 
     [Fact]
@@ -103,7 +110,9 @@ public class ClientIpEnricherTests
     {
         //Arrange
         const string customForwardHeader = "CustomForwardHeader";
-        _contextAccessor.HttpContext.Connection.RemoteIpAddress = IPAddress.Loopback;
+        var ip = IPAddress.Loopback.ToString();
+        SetIp(ip);
+
         _contextAccessor.HttpContext.Request.Headers.Add(customForwardHeader, IPAddress.Broadcast.ToString());
 
         var ipEnricher = new ClientIpEnricher(customForwardHeader, _contextAccessor);
@@ -137,5 +146,15 @@ public class ClientIpEnricherTests
 
         // Assert
         Assert.Null(exception);
+    }
+
+    private void SetIp(string ip)
+    {
+#if NETFULL
+        _contextAccessor.HttpContext.Request.ServerVariables["REMOTE_ADDR"] = ip;
+#else
+    var ipAddress = IPAddress.Parse(ip);
+    _contextAccessor.HttpContext.Connection.RemoteIpAddress = ipAddress;
+#endif
     }
 }

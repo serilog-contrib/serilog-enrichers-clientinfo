@@ -1,32 +1,33 @@
-﻿using Serilog.Core;
-using Serilog.Events;
+﻿using Serilog.Events;
 using System;
+using Serilog.Core;
 
-namespace Serilog.Enrichers.ClientInfo.Tests;
-
-public class DelegatingSink : ILogEventSink
+namespace Serilog.Enrichers.ClientInfo.Tests
 {
-    private readonly Action<LogEvent> _write;
-
-    public DelegatingSink(Action<LogEvent> write)
+    public class DelegatingSink : ILogEventSink
     {
-        _write = write ?? throw new ArgumentNullException(nameof(write));
-    }
+        private readonly Action<LogEvent> _write;
 
-    public void Emit(LogEvent logEvent)
-    {
-        _write(logEvent);
-    }
+        public DelegatingSink(Action<LogEvent> write)
+        {
+            _write = write ?? throw new ArgumentNullException(nameof(write));
+        }
 
-    public static LogEvent GetLogEvent(Action<ILogger> writeAction)
-    {
-        LogEvent result = null;
-        var l = new LoggerConfiguration()
-            .MinimumLevel.Verbose()
-            .WriteTo.Sink(new DelegatingSink(le => result = le))
-            .CreateLogger();
+        public void Emit(LogEvent logEvent)
+        {
+            _write(logEvent);
+        }
 
-        writeAction(l);
-        return result;
+        public static LogEvent GetLogEvent(Action<ILogger> writeAction)
+        {
+            LogEvent result = null;
+            var l = new LoggerConfiguration()
+                .MinimumLevel.Verbose()
+                .WriteTo.Sink(new DelegatingSink(le => result = le))
+                .CreateLogger();
+
+            writeAction(l);
+            return result;
+        }
     }
 }

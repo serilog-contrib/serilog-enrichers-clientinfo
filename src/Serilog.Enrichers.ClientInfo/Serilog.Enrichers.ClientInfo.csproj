@@ -19,7 +19,7 @@
     <DefineConstants>NETCORE;NETSTANDARD;NETSTANDARD2_1</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net462'">
-    <DefineConstants>NET45;NETFULL</DefineConstants>
+    <DefineConstants>NET46;NETFULL</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
@@ -38,5 +38,12 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Serilog" Version="2.9.0" />
   </ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Serilog.Enrichers.ClientInfo.Tests" />
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+			<_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
 
 </Project>

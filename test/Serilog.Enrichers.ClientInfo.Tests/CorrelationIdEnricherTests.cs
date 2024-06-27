@@ -1,174 +1,185 @@
-﻿using Microsoft.AspNetCore.Http;
-using NSubstitute;
-using Serilog.Events;
+﻿using Serilog.Events;
 using System;
 using Xunit;
 
-namespace Serilog.Enrichers.ClientInfo.Tests;
+#if NETFULL
 
-public class CorrelationIdEnricherTests
+using Serilog.Enrichers.ClientInfo.Accessors;
+
+#else
+using Microsoft.AspNetCore.Http;
+#endif
+
+namespace Serilog.Enrichers.ClientInfo.Tests
 {
-    private const string HeaderKey = "x-correlation-id";
-    private const string LogPropertyName = "CorrelationId";
-    private readonly IHttpContextAccessor _contextAccessor;
-
-    public CorrelationIdEnricherTests()
+    public class CorrelationIdEnricherTests : TestBase
     {
-        var httpContext = new DefaultHttpContext();
-        _contextAccessor = Substitute.For<IHttpContextAccessor>();
-        _contextAccessor.HttpContext.Returns(httpContext);
-    }
+        private const string HeaderKey = "x-correlation-id";
+        private const string LogPropertyName = "CorrelationId";
+        private readonly IHttpContextAccessor _contextAccessor;
 
-    [Fact]
-    public void EnrichLogWithCorrelationId_WhenHttpRequestContainCorrelationHeader_ShouldCreateCorrelationIdProperty()
-    {
-        // Arrange
-        var correlationId = Guid.NewGuid().ToString();
-        _contextAccessor.HttpContext.Request.Headers.Add(HeaderKey, correlationId);
-        var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
+        public CorrelationIdEnricherTests()
+        {
+            _contextAccessor = GetMockHttpContextAccessor;
+        }
 
-        LogEvent evt = null;
-        var log = new LoggerConfiguration()
-            .Enrich.With(correlationIdEnricher)
-            .WriteTo.Sink(new DelegatingSink(e => evt = e))
-            .CreateLogger();
+        [Fact]
+        public void
+            EnrichLogWithCorrelationId_WhenHttpRequestContainCorrelationHeader_ShouldCreateCorrelationIdProperty()
+        {
+            // Arrange
+            var correlationId = Guid.NewGuid().ToString();
+            _contextAccessor.HttpContext.Request.Headers.Add(HeaderKey, correlationId);
+            var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
 
-        // Act
-        log.Information(@"Has a correlation id.");
+            LogEvent evt = null;
+            var log = new LoggerConfiguration()
+                .Enrich.With(correlationIdEnricher)
+                .WriteTo.Sink(new DelegatingSink(e => evt = e))
+                .CreateLogger();
 
-        // Assert
-        Assert.NotNull(evt);
-        Assert.True(evt.Properties.ContainsKey(LogPropertyName));
-        Assert.Equal(correlationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
-    }
+            // Act
+            log.Information(@"Has a correlation id.");
 
-    [Fact]
-    public void EnrichLogWithCorrelationId_WhenHttpRequestContainCorrelationHeader_ShouldCreateCorrelationIdPropertyHasValue()
-    {
-        // Arrange
-        var correlationId = Guid.NewGuid().ToString();
-        _contextAccessor.HttpContext.Request.Headers.Add(HeaderKey, correlationId);
+            // Assert
+            Assert.NotNull(evt);
+            Assert.True(evt.Properties.ContainsKey(LogPropertyName));
+            Assert.Equal(correlationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
+        }
 
-        var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
+        [Fact]
+        public void
+            EnrichLogWithCorrelationId_WhenHttpRequestContainCorrelationHeader_ShouldCreateCorrelationIdPropertyHasValue()
+        {
+            // Arrange
+            var correlationId = Guid.NewGuid().ToString();
+            _contextAccessor.HttpContext.Request.Headers.Add(HeaderKey, correlationId);
 
-        LogEvent evt = null;
-        var log = new LoggerConfiguration()
-            .Enrich.With(correlationIdEnricher)
-            .WriteTo.Sink(new DelegatingSink(e => evt = e))
-            .CreateLogger();
+            var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
 
-        // Act
-        log.Information(@"Has a correlation id.");
+            LogEvent evt = null;
+            var log = new LoggerConfiguration()
+                .Enrich.With(correlationIdEnricher)
+                .WriteTo.Sink(new DelegatingSink(e => evt = e))
+                .CreateLogger();
 
-        // Assert
-        Assert.NotNull(evt);
-        Assert.True(evt.Properties.ContainsKey(LogPropertyName));
-        Assert.Equal(correlationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
-    }
+            // Act
+            log.Information(@"Has a correlation id.");
 
-    [Fact]
-    public void EnrichLogWithCorrelationId_WhenHttpRequestNotContainCorrelationHeaderAndAddDefaultValueIsFalse_ShouldCreateCorrelationIdPropertyWithNoValue()
-    {
-        // Arrange
-        var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
+            // Assert
+            Assert.NotNull(evt);
+            Assert.True(evt.Properties.ContainsKey(LogPropertyName));
+            Assert.Equal(correlationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
+        }
 
-        LogEvent evt = null;
-        var log = new LoggerConfiguration()
-            .Enrich.With(correlationIdEnricher)
-            .WriteTo.Sink(new DelegatingSink(e => evt = e))
-            .CreateLogger();
+        [Fact]
+        public void
+            EnrichLogWithCorrelationId_WhenHttpRequestNotContainCorrelationHeaderAndAddDefaultValueIsFalse_ShouldCreateCorrelationIdPropertyWithNoValue()
+        {
+            // Arrange
+            var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
 
-        // Act
-        log.Information(@"Has a correlation id.");
+            LogEvent evt = null;
+            var log = new LoggerConfiguration()
+                .Enrich.With(correlationIdEnricher)
+                .WriteTo.Sink(new DelegatingSink(e => evt = e))
+                .CreateLogger();
 
-        // Assert
-        Assert.NotNull(evt);
-        Assert.True(evt.Properties.ContainsKey(LogPropertyName));
-        Assert.Null(evt.Properties[LogPropertyName].LiteralValue());
-    }
+            // Act
+            log.Information(@"Has a correlation id.");
 
-    [Fact]
-    public void EnrichLogWithCorrelationId_WhenHttpRequestNotContainCorrelationHeaderAndAddDefaultValueIsTrue_ShouldCreateCorrelationIdPropertyHasValue()
-    {
-        // Arrange
-        var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, true, _contextAccessor);
+            // Assert
+            Assert.NotNull(evt);
+            Assert.True(evt.Properties.ContainsKey(LogPropertyName));
+            Assert.Null(evt.Properties[LogPropertyName].LiteralValue());
+        }
 
-        LogEvent evt = null;
-        var log = new LoggerConfiguration()
-            .Enrich.With(correlationIdEnricher)
-            .WriteTo.Sink(new DelegatingSink(e => evt = e))
-            .CreateLogger();
+        [Fact]
+        public void
+            EnrichLogWithCorrelationId_WhenHttpRequestNotContainCorrelationHeaderAndAddDefaultValueIsTrue_ShouldCreateCorrelationIdPropertyHasValue()
+        {
+            // Arrange
+            var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, true, _contextAccessor);
 
-        // Act
-        log.Information(@"Has a correlation id.");
+            LogEvent evt = null;
+            var log = new LoggerConfiguration()
+                .Enrich.With(correlationIdEnricher)
+                .WriteTo.Sink(new DelegatingSink(e => evt = e))
+                .CreateLogger();
 
-        // Assert
-        Assert.NotNull(evt);
-        Assert.True(evt.Properties.ContainsKey(LogPropertyName));
-        Assert.NotNull(evt.Properties[LogPropertyName].LiteralValue().ToString());
-    }
+            // Act
+            log.Information(@"Has a correlation id.");
 
-    [Fact]
-    public void EnrichLogWithCorrelationId_WhenHttpResponseContainsCorrelationIdHeader_ShouldCreateCorrelationIdProperty()
-    {
-        // Arrange
-        var correlationId = Guid.NewGuid().ToString();
-        _contextAccessor.HttpContext.Response.Headers.Add(HeaderKey, correlationId);
-        var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
+            // Assert
+            Assert.NotNull(evt);
+            Assert.True(evt.Properties.ContainsKey(LogPropertyName));
+            Assert.NotNull(evt.Properties[LogPropertyName].LiteralValue().ToString());
+        }
 
-        LogEvent evt = null;
-        var log = new LoggerConfiguration()
-            .Enrich.With(correlationIdEnricher)
-            .WriteTo.Sink(new DelegatingSink(e => evt = e))
-            .CreateLogger();
+        [Fact]
+        public void
+            EnrichLogWithCorrelationId_WhenHttpResponseContainsCorrelationIdHeader_ShouldCreateCorrelationIdProperty()
+        {
+            // Arrange
+            var correlationId = Guid.NewGuid().ToString();
+            _contextAccessor.HttpContext.Response.Headers.Add(HeaderKey, correlationId);
+            var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
 
-        // Act
-        log.Information(@"Has a correlation id.");
+            LogEvent evt = null;
+            var log = new LoggerConfiguration()
+                .Enrich.With(correlationIdEnricher)
+                .WriteTo.Sink(new DelegatingSink(e => evt = e))
+                .CreateLogger();
 
-        // Assert
-        Assert.NotNull(evt);
-        Assert.True(evt.Properties.ContainsKey(LogPropertyName));
-        Assert.Equal(correlationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
-    }
+            // Act
+            log.Information(@"Has a correlation id.");
 
-    [Fact]
-    public void EnrichLogWithCorrelationId_WhenHttpRequestAndResponseContainCorrelationIdHeader_ShouldCreateCorrelationIdPropertyFromHttpRequest()
-    {
-        // Arrange
-        var requestCorrelationId = Guid.NewGuid().ToString();
-        var responseCorrelationId = Guid.NewGuid().ToString();
-        _contextAccessor.HttpContext.Request.Headers.Add(HeaderKey, requestCorrelationId);
-        _contextAccessor.HttpContext.Response.Headers.Add(HeaderKey, responseCorrelationId);
-        var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
+            // Assert
+            Assert.NotNull(evt);
+            Assert.True(evt.Properties.ContainsKey(LogPropertyName));
+            Assert.Equal(correlationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
+        }
 
-        LogEvent evt = null;
-        var log = new LoggerConfiguration()
-            .Enrich.With(correlationIdEnricher)
-            .WriteTo.Sink(new DelegatingSink(e => evt = e))
-            .CreateLogger();
+        [Fact]
+        public void
+            EnrichLogWithCorrelationId_WhenHttpRequestAndResponseContainCorrelationIdHeader_ShouldCreateCorrelationIdPropertyFromHttpRequest()
+        {
+            // Arrange
+            var requestCorrelationId = Guid.NewGuid().ToString();
+            var responseCorrelationId = Guid.NewGuid().ToString();
+            _contextAccessor.HttpContext.Request.Headers.Add(HeaderKey, requestCorrelationId);
+            _contextAccessor.HttpContext.Response.Headers.Add(HeaderKey, responseCorrelationId);
+            var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
 
-        // Act
-        log.Information(@"Has a correlation id.");
+            LogEvent evt = null;
+            var log = new LoggerConfiguration()
+                .Enrich.With(correlationIdEnricher)
+                .WriteTo.Sink(new DelegatingSink(e => evt = e))
+                .CreateLogger();
 
-        // Assert
-        Assert.NotNull(evt);
-        Assert.True(evt.Properties.ContainsKey(LogPropertyName));
-        Assert.Equal(requestCorrelationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
-    }
+            // Act
+            log.Information(@"Has a correlation id.");
 
-    [Fact]
-    public void WithClientIp_ThenLoggerIsCalled_ShouldNotThrowException()
-    {
-        // Arrange
-        var logger = new LoggerConfiguration()
-            .Enrich.WithCorrelationId()
-            .WriteTo.Sink(new DelegatingSink(e => { }))
-            .CreateLogger();
+            // Assert
+            Assert.NotNull(evt);
+            Assert.True(evt.Properties.ContainsKey(LogPropertyName));
+            Assert.Equal(requestCorrelationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
+        }
 
-        // Act
-        var exception = Record.Exception(() => logger.Information("LOG"));
+        [Fact]
+        public void WithClientIp_ThenLoggerIsCalled_ShouldNotThrowException()
+        {
+            // Arrange
+            var logger = new LoggerConfiguration()
+                .Enrich.WithCorrelationId()
+                .WriteTo.Sink(new DelegatingSink(e => { }))
+                .CreateLogger();
 
-        // Assert
-        Assert.Null(exception);
+            // Act
+            var exception = Record.Exception(() => logger.Information("LOG"));
+
+            // Assert
+            Assert.Null(exception);
+        }
     }
 }
