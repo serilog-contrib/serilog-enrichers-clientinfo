@@ -1,5 +1,6 @@
 ﻿using Serilog.Events;
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 #if NETFULL
@@ -16,11 +17,11 @@ namespace Serilog.Enrichers.ClientInfo.Tests
     {
         private const string HeaderKey = "x-correlation-id";
         private const string LogPropertyName = "CorrelationId";
-        private readonly IHttpContextAccessor _contextAccessor;
+        private IHttpContextAccessor _contextAccessor;
 
         public CorrelationIdEnricherTests()
         {
-            _contextAccessor = GetMockHttpContextAccessor;
+            _contextAccessor = MockHttpContextAccessor();
         }
 
         [Fact]
@@ -29,7 +30,9 @@ namespace Serilog.Enrichers.ClientInfo.Tests
         {
             // Arrange
             var correlationId = Guid.NewGuid().ToString();
-            _contextAccessor.HttpContext.Request.Headers.Add(HeaderKey, correlationId);
+            var headers = new Dictionary<string, string> { { HeaderKey, correlationId } };
+            _contextAccessor = MockHttpContextAccessor(headers);
+
             var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
 
             LogEvent evt = null;

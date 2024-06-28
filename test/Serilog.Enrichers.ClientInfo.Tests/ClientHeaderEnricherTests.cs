@@ -18,7 +18,7 @@ namespace Serilog.Enrichers.ClientInfo.Tests
 
         public ClientHeaderEnricherTests()
         {
-            _contextAccessor = GetMockHttpContextAccessor;
+            _contextAccessor = MockHttpContextAccessor();
         }
 
         [Fact]

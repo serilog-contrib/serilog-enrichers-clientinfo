@@ -1,10 +1,13 @@
-﻿using System.Collections.Specialized;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using NSubstitute;
 using System.IO;
+using System.Reflection;
 
 #if NETFULL
 
-using System.Collections;
 using System.Web;
 using Serilog.Enrichers.ClientInfo.Accessors;
 
@@ -16,43 +19,47 @@ namespace Serilog.Enrichers.ClientInfo.Tests
 {
     public abstract class TestBase
     {
-        public IHttpContextAccessor GetMockHttpContextAccessor
+        public IHttpContextAccessor MockHttpContextAccessor(Dictionary<string, string> headerDict = null)
         {
-            get
-            {
 #if NETFULL
-                var httpContextBaseSub = Substitute.For<HttpContextBase>();
-                var requestSub = Substitute.For<HttpRequestBase>();
-                var responseSub = Substitute.For<HttpResponseBase>();
-                var serverUtilitySub = Substitute.For<HttpServerUtilityBase>();
-                var itemsSub = Substitute.For<IDictionary>();
-                httpContextBaseSub.Request.Returns(requestSub);
-                httpContextBaseSub.Response.Returns(responseSub);
-                httpContextBaseSub.Server.Returns(serverUtilitySub);
-                httpContextBaseSub.Items.Returns(itemsSub);
+            HttpContext.Current = new HttpContext(new HttpRequest("", "http://tempuri.org", ""), new HttpResponse(new StringWriter()));
 
-                //var requestSub = Substitute.For<HttpRequest>();
-                //var request = new HttpRequest("", "http://tempuri.org", "")
-                //{
-                //    Headers =
-                //    {
-                //        ["test"] = "test"
-                //    }
-                //};
+            NameValueCollection headers = HttpContext.Current.Request.Headers;
 
-                var contextAccessor = new HttpContextAccessor
+            Type t = headers.GetType();
+            const BindingFlags nonPublicInstanceMethod = BindingFlags.InvokeMethod | BindingFlags.NonPublic | BindingFlags.Instance;
+
+            t.InvokeMember("MakeReadWrite", nonPublicInstanceMethod, null, headers, null);
+            t.InvokeMember("InvalidateCachedArrays", nonPublicInstanceMethod, null, headers, null);
+
+            if (headerDict != null)
+            {
+                foreach (var keyValue in headerDict)
                 {
-                    HttpContextBase = httpContextBaseSub
-                };
+                    t.InvokeMember("BaseRemove", nonPublicInstanceMethod, null, headers, new object[] { keyValue.Key });
+                    t.InvokeMember("BaseAdd", nonPublicInstanceMethod, null, headers, new object[] { keyValue.Key, new ArrayList { keyValue.Value } });
+                    t.InvokeMember("MakeReadOnly", nonPublicInstanceMethod, null, headers, null);
+                }
+            }
 
-                return contextAccessor;
+            var contextAccessor = new HttpContextAccessor { HttpContext = HttpContext.Current };
+
+            return contextAccessor;
 #else
             var httpContext = new DefaultHttpContext();
-            IHttpContextAccessor contextAccessor = Substitute.For<IHttpContextAccessor>();
+            var contextAccessor = Substitute.For<IHttpContextAccessor>();
             contextAccessor.HttpContext.Returns(httpContext);
+
+            if (headerDict != null)
+            {
+                foreach (var keyValue in headerDict)
+                {
+                    contextAccessor.HttpContext.Request.Headers.Add(keyValue.Key, keyValue.Value);
+                }
+            }
+
             return contextAccessor;
 #endif
-            }
         }
     }
 }

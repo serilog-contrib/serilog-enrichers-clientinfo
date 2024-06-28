@@ -20,7 +20,7 @@ public class ClientIpEnricherTests : TestBase
 
     public ClientIpEnricherTests()
     {
-        _contextAccessor = GetMockHttpContextAccessor;
+        _contextAccessor = MockHttpContextAccessor();
     }
 
     [Theory]
@@ -153,8 +153,8 @@ public class ClientIpEnricherTests : TestBase
 #if NETFULL
         _contextAccessor.HttpContext.Request.ServerVariables["REMOTE_ADDR"] = ip;
 #else
-    var ipAddress = IPAddress.Parse(ip);
-    _contextAccessor.HttpContext.Connection.RemoteIpAddress = ipAddress;
+        var ipAddress = IPAddress.Parse(ip);
+        _contextAccessor.HttpContext.Connection.RemoteIpAddress = ipAddress;
 #endif
     }
 }
