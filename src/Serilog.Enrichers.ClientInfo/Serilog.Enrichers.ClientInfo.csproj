@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	  <TargetFrameworks>net462;netstandard2.0;netstandard2.1;net6.0;net7.0</TargetFrameworks>
+	  <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
 		<AssemblyName>Serilog.Enrichers.ClientInfo</AssemblyName>
     <RootNamespace>Serilog</RootNamespace>
 	  <LangVersion>latest</LangVersion>
@@ -12,30 +12,11 @@
 	  <Version>2.0.3</Version>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
-    <DefineConstants>NETCORE;NETSTANDARD;NETSTANDARD2_0</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.1'">
-    <DefineConstants>NETCORE;NETSTANDARD;NETSTANDARD2_1</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net462'">
-    <DefineConstants>NET45;NETFULL</DefineConstants>
-  </PropertyGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.22" />
-    <PackageReference Include="Serilog" Version="2.7.1" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.1'">
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.22" />
-    <PackageReference Include="Serilog" Version="2.9.0" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net462'">
-    <Reference Include="System.Web" />
-    <PackageReference Include="Serilog" Version="2.4.0" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net462' and '$(TargetFramework)' != 'netstandard2.0' and '$(TargetFramework)' != 'netstandard2.1'">
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+	<ItemGroup>
     <PackageReference Include="Serilog" Version="2.9.0" />
   </ItemGroup>
 

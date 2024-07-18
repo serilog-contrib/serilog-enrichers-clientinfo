@@ -1,14 +1,7 @@
-﻿using Serilog.Core;
+﻿using Microsoft.AspNetCore.Http;
+using Serilog.Core;
 using Serilog.Events;
 using System;
-
-#if NETFULL
-
-using Serilog.Enrichers.ClientInfo.Accessors;
-
-#else
-using Microsoft.AspNetCore.Http;
-#endif
 
 namespace Serilog.Enrichers;
 
@@ -21,6 +14,15 @@ public class CorrelationIdEnricher : ILogEventEnricher
     private readonly bool _addValueIfHeaderAbsence;
     private readonly IHttpContextAccessor _contextAccessor;
 
+    /// <summary>
+    ///   Initializes a new instance of the <see cref="CorrelationIdEnricher"/> class.
+    /// </summary>
+    /// <param name="headerKey">
+    ///   The header key used to retrieve the correlation ID from the HTTP request or response headers.
+    /// </param>
+    /// <param name="addValueIfHeaderAbsence">
+    ///   Determines whether to add a new correlation ID value if the header is absent.
+    /// </param>
     public CorrelationIdEnricher(string headerKey, bool addValueIfHeaderAbsence)
         : this(headerKey, addValueIfHeaderAbsence, new HttpContextAccessor())
     {
@@ -33,6 +35,7 @@ public class CorrelationIdEnricher : ILogEventEnricher
         _contextAccessor = contextAccessor;
     }
 
+    /// <inheritdoc/>
     public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {
         var httpContext = _contextAccessor.HttpContext;
@@ -49,9 +52,9 @@ public class CorrelationIdEnricher : ILogEventEnricher
 
         var requestHeader = httpContext.Request.Headers[_headerKey];
         var responseHeader = httpContext.Response.Headers[_headerKey];
-        
+
         string correlationId;
-        
+
         if (!string.IsNullOrWhiteSpace(requestHeader))
         {
             correlationId = requestHeader;

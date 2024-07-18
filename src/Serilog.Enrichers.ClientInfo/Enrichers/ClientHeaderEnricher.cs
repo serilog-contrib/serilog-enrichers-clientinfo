@@ -1,13 +1,6 @@
-﻿using Serilog.Core;
+﻿using Microsoft.AspNetCore.Http;
+using Serilog.Core;
 using Serilog.Events;
-
-#if NETFULL
-
-using Serilog.Enrichers.ClientInfo.Accessors;
-
-#else
-using Microsoft.AspNetCore.Http;
-#endif
 
 namespace Serilog.Enrichers;
 
@@ -19,6 +12,11 @@ public class ClientHeaderEnricher : ILogEventEnricher
     private readonly string _headerKey;
     private readonly IHttpContextAccessor _contextAccessor;
 
+    /// <summary>
+    ///   Initializes a new instance of the <see cref="ClientHeaderEnricher"/> class.
+    /// </summary>
+    /// <param name="headerKey">The key of the header.</param>
+    /// <param name="propertyName">The name of the property.</param>
     public ClientHeaderEnricher(string headerKey, string propertyName)
         : this(headerKey, propertyName, new HttpContextAccessor())
     {
@@ -27,7 +25,7 @@ public class ClientHeaderEnricher : ILogEventEnricher
     internal ClientHeaderEnricher(string headerKey, string propertyName, IHttpContextAccessor contextAccessor)
     {
         _headerKey = headerKey;
-        _propertyName = string.IsNullOrWhiteSpace(propertyName) 
+        _propertyName = string.IsNullOrWhiteSpace(propertyName)
             ? headerKey.Replace("-", "")
             : propertyName;
         _clientHeaderItemKey = $"Serilog_{headerKey}";
@@ -43,7 +41,9 @@ public class ClientHeaderEnricher : ILogEventEnricher
     {
         var httpContext = _contextAccessor.HttpContext;
         if (httpContext == null)
+        {
             return;
+        }
 
         if (httpContext.Items[_clientHeaderItemKey] is LogEventProperty logEventProperty)
         {

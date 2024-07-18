@@ -1,15 +1,7 @@
-﻿using Serilog.Configuration;
+﻿using Microsoft.AspNetCore.Http;
+using Serilog.Configuration;
 using Serilog.Enrichers;
 using System;
-using System.Web;
-
-#if NETFULL
-
-using Serilog.Enrichers.ClientInfo.Accessors;
-
-#else
-using Microsoft.AspNetCore.Http;
-#endif
 
 namespace Serilog;
 
@@ -38,7 +30,7 @@ public static class ClientInfoLoggerConfigurationExtensions
             throw new ArgumentNullException(nameof(enrichmentConfiguration));
         }
 
-        return enrichmentConfiguration.With(new ClientIpEnricher(headerName));
+        return enrichmentConfiguration.With<ClientIpEnricher>();
     }
 
     /// <summary>
