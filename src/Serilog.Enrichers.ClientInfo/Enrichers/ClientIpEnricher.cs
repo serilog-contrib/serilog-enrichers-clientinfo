@@ -1,89 +1,55 @@
-﻿using Serilog.Core;
+﻿using Microsoft.AspNetCore.Http;
+using Serilog.Core;
 using Serilog.Events;
-using System.Linq;
 using System.Runtime.CompilerServices;
-
-#if NETFULL
-
-using Serilog.Enrichers.ClientInfo.Accessors;
-
-#else
-using Microsoft.AspNetCore.Http;
-#endif
 
 [assembly: InternalsVisibleTo("Serilog.Enrichers.ClientInfo.Tests")]
 
-namespace Serilog.Enrichers
+namespace Serilog.Enrichers;
+
+public class ClientIpEnricher : ILogEventEnricher
 {
-    public class ClientIpEnricher : ILogEventEnricher
+    private const string IpAddressPropertyName = "ClientIp";
+    private const string IpAddressItemKey = "Serilog_ClientIp";
+
+    private readonly IHttpContextAccessor _contextAccessor;
+
+    /// <summary>
+    ///   Initializes a new instance of the <see cref="ClientIpEnricher"/> class.
+    /// </summary>
+    public ClientIpEnricher() : this(new HttpContextAccessor())
     {
-        private const string IpAddressPropertyName = "ClientIp";
-        private const string IpAddressItemKey = "Serilog_ClientIp";
-        private readonly string _forwardHeaderKey;
+    }
 
-        private readonly IHttpContextAccessor _contextAccessor;
+    internal ClientIpEnricher(IHttpContextAccessor contextAccessor)
+    {
+        _contextAccessor = contextAccessor;
+    }
 
-        public ClientIpEnricher(string forwardHeaderKey)
-            : this(forwardHeaderKey, new HttpContextAccessor())
+    public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+    {
+        var httpContext = _contextAccessor.HttpContext;
+        if (httpContext == null)
         {
+            return;
         }
 
-        internal ClientIpEnricher(string forwardHeaderKey, IHttpContextAccessor contextAccessor)
+        if (httpContext.Items[IpAddressItemKey] is LogEventProperty logEventProperty)
         {
-            _forwardHeaderKey = forwardHeaderKey;
-            _contextAccessor = contextAccessor;
+            logEvent.AddPropertyIfAbsent(logEventProperty);
+            return;
         }
 
-        public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+        var ipAddress = _contextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+
+        if (string.IsNullOrWhiteSpace(ipAddress))
         {
-            var httpContext = _contextAccessor.HttpContext;
-            if (httpContext == null)
-                return;
-
-            if (httpContext.Items[IpAddressItemKey] is LogEventProperty logEventProperty)
-            {
-                logEvent.AddPropertyIfAbsent(logEventProperty);
-                return;
-            }
-
-            var ipAddress = GetIpAddress();
-
-            if (string.IsNullOrWhiteSpace(ipAddress))
-                ipAddress = "unknown";
-
-            var ipAddressProperty = new LogEventProperty(IpAddressPropertyName, new ScalarValue(ipAddress));
-            httpContext.Items.Add(IpAddressItemKey, ipAddressProperty);
-
-            logEvent.AddPropertyIfAbsent(ipAddressProperty);
+            ipAddress = "unknown";
         }
 
-#if NETFULL
+        var ipAddressProperty = new LogEventProperty(IpAddressPropertyName, new ScalarValue(ipAddress));
+        httpContext.Items.Add(IpAddressItemKey, ipAddressProperty);
 
-        private string GetIpAddress()
-        {
-            var ipAddress = _contextAccessor.HttpContext.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
-
-            return !string.IsNullOrEmpty(ipAddress)
-                ? GetIpAddressFromProxy(ipAddress)
-                : _contextAccessor.HttpContext.Request.ServerVariables["REMOTE_ADDR"];
-        }
-
-#else
-        private string GetIpAddress()
-        {
-            var ipAddress = _contextAccessor.HttpContext?.Request?.Headers[_forwardHeaderKey].FirstOrDefault();
-
-            return !string.IsNullOrEmpty(ipAddress)
-                ? GetIpAddressFromProxy(ipAddress)
-                : _contextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
-        }
-#endif
-
-        private string GetIpAddressFromProxy(string proxifiedIpList)
-        {
-            var addresses = proxifiedIpList.Split(',');
-
-            return addresses.Length == 0 ? string.Empty : addresses[0].Trim();
-        }
+        logEvent.AddPropertyIfAbsent(ipAddressProperty);
     }
 }
