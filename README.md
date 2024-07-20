@@ -46,10 +46,10 @@ or in `appsettings.json` file:
 ---
 
 ### ClientIp
-`ClientIp` enricher reads client IP from `HttpContext.Connection.RemoteIpAddress`. Since version 2.1, for [security reasons](https://nvd.nist.gov/vuln/detail/CVE-2023-22474), it no longer reads the `x-forwarded-for` header. To handle forwarded headers, configure [ForwardedHeadersOptions](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-7.0#forwarded-headers-middleware-order). If you still want to log `x-forwarded-header`, you can use the `RequestHeader`` enricher.
+`ClientIp` enricher reads client IP from `HttpContext.Connection.RemoteIpAddress`. Since version 2.1, for [security reasons](https://nvd.nist.gov/vuln/detail/CVE-2023-22474), it no longer reads the `x-forwarded-for` header. To handle forwarded headers, configure [ForwardedHeadersOptions](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-7.0#forwarded-headers-middleware-order). If you still want to log `x-forwarded-for`, you can use the `RequestHeader` enricher.
 ```csharp
 Log.Logger = new LoggerConfiguration()
-    .Enrich.WithClientIp(headerName: "CF-Connecting-IP")
+    .Enrich.WithClientIp()
     ...
 ```
 or
