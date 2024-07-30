@@ -24,7 +24,7 @@ public class CorrelationIdEnricherTests
     {
         // Arrange
         var correlationId = Guid.NewGuid().ToString();
-        _contextAccessor.HttpContext.Request.Headers.Add(HeaderKey, correlationId);
+        _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = correlationId;
         var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
 
         LogEvent evt = null;
@@ -47,8 +47,7 @@ public class CorrelationIdEnricherTests
     {
         // Arrange
         var correlationId = Guid.NewGuid().ToString();
-        _contextAccessor.HttpContext.Request.Headers.Add(HeaderKey, correlationId);
-
+        _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = correlationId;
         var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
 
         LogEvent evt = null;
@@ -113,7 +112,7 @@ public class CorrelationIdEnricherTests
     {
         // Arrange
         var correlationId = Guid.NewGuid().ToString();
-        _contextAccessor.HttpContext.Response.Headers.Add(HeaderKey, correlationId);
+        _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = correlationId;
         var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
 
         LogEvent evt = null;
@@ -137,8 +136,8 @@ public class CorrelationIdEnricherTests
         // Arrange
         var requestCorrelationId = Guid.NewGuid().ToString();
         var responseCorrelationId = Guid.NewGuid().ToString();
-        _contextAccessor.HttpContext.Request.Headers.Add(HeaderKey, requestCorrelationId);
-        _contextAccessor.HttpContext.Response.Headers.Add(HeaderKey, responseCorrelationId);
+        _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = requestCorrelationId;
+        _contextAccessor.HttpContext!.Response!.Headers[HeaderKey] = responseCorrelationId;
         var correlationIdEnricher = new CorrelationIdEnricher(HeaderKey, false, _contextAccessor);
 
         LogEvent evt = null;
@@ -162,7 +161,7 @@ public class CorrelationIdEnricherTests
         // Arrange
         var logger = new LoggerConfiguration()
             .Enrich.WithCorrelationId()
-            .WriteTo.Sink(new DelegatingSink(e => { }))
+            .WriteTo.Sink(new DelegatingSink(_ => { }))
             .CreateLogger();
 
         // Act

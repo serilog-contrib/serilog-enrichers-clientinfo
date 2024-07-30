@@ -26,7 +26,7 @@ public class ClientIpEnricherTests
     {
         // Arrange
         var ipAddress = IPAddress.Parse(ip);
-        _contextAccessor.HttpContext.Connection.RemoteIpAddress = ipAddress;
+        _contextAccessor.HttpContext!.Connection.RemoteIpAddress = ipAddress;
 
         var ipEnricher = new ClientIpEnricher(_contextAccessor);
 
@@ -74,7 +74,7 @@ public class ClientIpEnricherTests
         // Arrange
         var logger = new LoggerConfiguration()
             .Enrich.WithClientIp()
-            .WriteTo.Sink(new DelegatingSink(e => { }))
+            .WriteTo.Sink(new DelegatingSink(_ => { }))
             .CreateLogger();
 
         // Act
