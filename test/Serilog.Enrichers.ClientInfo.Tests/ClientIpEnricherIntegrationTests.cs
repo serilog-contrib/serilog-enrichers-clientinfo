@@ -28,6 +28,7 @@ public class ClientIpEnricherIntegrationTests(CustomWebApplicationFactory factor
             .ToList();
 
         // Assert
-        Assert.All(forwardedClientIpLogs, l => l.Value.LiteralValue().Equals(ip));
+        response.EnsureSuccessStatusCode();
+        Assert.Equal(forwardedClientIpLogs.Count, allClientIpLogs.Count - 1);
     }
 }
