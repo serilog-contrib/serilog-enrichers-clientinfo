@@ -11,6 +11,7 @@ namespace Serilog.Enrichers;
 public class ClientIpEnricher : ILogEventEnricher
 {
     private const string IpAddressPropertyName = "ClientIp";
+    private const string IpAddressItemKey = "Serilog_ClientIp";
 
     private readonly IHttpContextAccessor _contextAccessor;
 
@@ -37,7 +38,19 @@ public class ClientIpEnricher : ILogEventEnricher
 
         var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
+        if (httpContext.Items[IpAddressItemKey] is LogEventProperty logEventProperty)
+        {
+            if (!((ScalarValue)logEventProperty.Value).Value.ToString()!.Equals(ipAddress))
+            {
+                logEventProperty = new LogEventProperty(IpAddressPropertyName, new ScalarValue(ipAddress));
+            }
+
+            logEvent.AddPropertyIfAbsent(logEventProperty);
+            return;
+        }
+
         LogEventProperty ipAddressProperty = new(IpAddressPropertyName, new ScalarValue(ipAddress));
+        httpContext.Items.Add(IpAddressItemKey, ipAddressProperty);
         logEvent.AddPropertyIfAbsent(ipAddressProperty);
     }
 }

@@ -9,7 +9,7 @@ using Serilog.Events;
 Log.Logger = new LoggerConfiguration()
     .Enrich.WithClientIp()
     .Enrich.WithRequestHeader("X-Forwarded-For")
-    .WriteTo.Sink(new DelegatingSink(e => LogEvent = e))
+    .WriteTo.Sink(new DelegatingSink(e => LogEvent = e, saveLogs: true))
     .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);

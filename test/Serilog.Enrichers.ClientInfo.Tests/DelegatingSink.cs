@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Serilog.Enrichers.ClientInfo.Tests;
 
-public class DelegatingSink(Action<LogEvent> write) : ILogEventSink
+public class DelegatingSink(Action<LogEvent> write, bool saveLogs = false) : ILogEventSink
 {
     private static readonly List<LogEvent> LogsEvents = new();
     private readonly Action<LogEvent> _write = write ?? throw new ArgumentNullException(nameof(write));
@@ -14,7 +14,11 @@ public class DelegatingSink(Action<LogEvent> write) : ILogEventSink
 
     public void Emit(LogEvent logEvent)
     {
-        LogsEvents.Add(logEvent);
+        if (saveLogs)
+        {
+            LogsEvents.Add(logEvent);
+        }
+
         _write(logEvent);
     }
 }
