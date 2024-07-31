@@ -26,18 +26,7 @@ builder.Services
 
 var app = builder.Build();
 
-app
-    .UseForwardedHeaders()
-    .Use(
-        async (context, next) =>
-        {
-            app.Logger.LogInformation(
-                "HttpContext.Connection.RemoteIpAddress: {RemoteIpAddress}, HttpContext.Items[\"Serilog_ClientIp\"]: {Serilog_ClientIp}",
-                context.Connection.RemoteIpAddress,
-                (context.Items["Serilog_ClientIp"] as LogEventProperty)?.Value);
-
-            await next(context);
-        });
+app.UseForwardedHeaders()
 
 app.MapGet("/", () => "hello world");
 
