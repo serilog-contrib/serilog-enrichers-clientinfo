@@ -26,7 +26,7 @@ builder.Services
 
 var app = builder.Build();
 
-app.UseForwardedHeaders()
+app.UseForwardedHeaders();
 
 app.MapGet("/", () => "hello world");
 
