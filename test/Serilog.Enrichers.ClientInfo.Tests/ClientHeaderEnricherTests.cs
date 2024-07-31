@@ -16,7 +16,7 @@ public class ClientHeaderEnricherTests
         _contextAccessor = Substitute.For<IHttpContextAccessor>();
         _contextAccessor.HttpContext.Returns(httpContext);
     }
-    
+
     [Fact]
     public void EnrichLogWithClientHeader_WhenHttpRequestContainHeader_ShouldCreateNamedHeaderValueProperty()
     {
@@ -24,7 +24,7 @@ public class ClientHeaderEnricherTests
         var headerKey = "RequestId";
         var propertyName = "HttpRequestId";
         var headerValue = Guid.NewGuid().ToString();
-        _contextAccessor.HttpContext.Request.Headers.Add(headerKey, headerValue);
+        _contextAccessor.HttpContext!.Request!.Headers[headerKey] = headerValue;
 
         var clientHeaderEnricher = new ClientHeaderEnricher(headerKey, propertyName, _contextAccessor);
 
@@ -35,8 +35,8 @@ public class ClientHeaderEnricherTests
             .CreateLogger();
 
         // Act
-        log.Information(@"First testing log enricher.");
-        log.Information(@"Second testing log enricher.");
+        log.Information("First testing log enricher.");
+        log.Information("Second testing log enricher.");
 
         // Assert
         Assert.NotNull(evt);
@@ -50,9 +50,9 @@ public class ClientHeaderEnricherTests
         // Arrange
         var headerKey = "RequestId";
         var headerValue = Guid.NewGuid().ToString();
-        _contextAccessor.HttpContext.Request.Headers.Add(headerKey, headerValue);
+        _contextAccessor!.HttpContext!.Request!.Headers[headerKey] = headerValue;
 
-        var clientHeaderEnricher = new ClientHeaderEnricher(headerKey, propertyName:string.Empty, _contextAccessor);
+        var clientHeaderEnricher = new ClientHeaderEnricher(headerKey, propertyName: string.Empty, _contextAccessor);
 
         LogEvent evt = null;
         var log = new LoggerConfiguration()
@@ -61,8 +61,8 @@ public class ClientHeaderEnricherTests
             .CreateLogger();
 
         // Act
-        log.Information(@"First testing log enricher.");
-        log.Information(@"Second testing log enricher.");
+        log.Information("First testing log enricher.");
+        log.Information("Second testing log enricher.");
 
         // Assert
         Assert.NotNull(evt);
@@ -71,18 +71,17 @@ public class ClientHeaderEnricherTests
     }
 
     [Fact]
-    public void EnrichLogWithMulitpleClientHeaderEnricher_WhenHttpRequestContainHeaders_ShouldCreateHeaderValuesProperty()
+    public void EnrichLogWithMultipleClientHeaderEnricher_WhenHttpRequestContainHeaders_ShouldCreateHeaderValuesProperty()
     {
         // Arrange
         var headerKey1 = "Header1";
         var headerKey2 = "User-Agent";
         var headerValue1 = Guid.NewGuid().ToString();
         var headerValue2 = Guid.NewGuid().ToString();
-        _contextAccessor.HttpContext.Request.Headers.Add(headerKey1, headerValue1);
-        _contextAccessor.HttpContext.Request.Headers.Add(headerKey2, headerValue2);
-
-        var clientHeaderEnricher1 = new ClientHeaderEnricher(headerKey1, propertyName:string.Empty, _contextAccessor);
-        var clientHeaderEnricher2 = new ClientHeaderEnricher(headerKey2, propertyName:string.Empty, _contextAccessor);
+        _contextAccessor!.HttpContext!.Request!.Headers[headerKey1] = headerValue1;
+        _contextAccessor!.HttpContext!.Request!.Headers[headerKey2] = headerValue2;
+        var clientHeaderEnricher1 = new ClientHeaderEnricher(headerKey1, propertyName: string.Empty, _contextAccessor);
+        var clientHeaderEnricher2 = new ClientHeaderEnricher(headerKey2, propertyName: string.Empty, _contextAccessor);
 
         LogEvent evt = null;
         var log = new LoggerConfiguration()
@@ -92,8 +91,8 @@ public class ClientHeaderEnricherTests
             .CreateLogger();
 
         // Act
-        log.Information(@"First testing log enricher.");
-        log.Information(@"Second testing log enricher.");
+        log.Information("First testing log enricher.");
+        log.Information("Second testing log enricher.");
 
         // Assert
         Assert.NotNull(evt);
@@ -108,7 +107,7 @@ public class ClientHeaderEnricherTests
     {
         // Arrange
         var headerKey = "RequestId";
-        var clientHeaderEnricher = new ClientHeaderEnricher(headerKey, propertyName:string.Empty, _contextAccessor);
+        var clientHeaderEnricher = new ClientHeaderEnricher(headerKey, propertyName: string.Empty, _contextAccessor);
 
         LogEvent evt = null;
         var log = new LoggerConfiguration()
@@ -117,8 +116,8 @@ public class ClientHeaderEnricherTests
             .CreateLogger();
 
         // Act
-        log.Information(@"First testing log enricher.");
-        log.Information(@"Second testing log enricher.");
+        log.Information("First testing log enricher.");
+        log.Information("Second testing log enricher.");
 
         // Assert
         Assert.NotNull(evt);
@@ -132,7 +131,7 @@ public class ClientHeaderEnricherTests
         // Arrange
         var logger = new LoggerConfiguration()
             .Enrich.WithRequestHeader("HeaderName")
-            .WriteTo.Sink(new DelegatingSink(e => { }))
+            .WriteTo.Sink(new DelegatingSink(_ => { }))
             .CreateLogger();
 
         // Act
