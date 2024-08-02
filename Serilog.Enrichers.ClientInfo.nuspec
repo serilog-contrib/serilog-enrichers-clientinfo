@@ -12,25 +12,18 @@
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Enrich logs with client IP, CorrelationId and HTTP request headers.</description>
 		<readme>docs\README.md</readme>
-		<releaseNotes></releaseNotes>
-		<copyright></copyright>
+		<icon>assets\icon.png</icon>
 		<tags>serilog enrichers enricher ip correlation-id request header</tags>
+		<copyright>© 2024 Serilog Contributors</copyright>
+		<releaseNotes></releaseNotes>
 		<dependencies>
-			<group targetFramework="net462">
-				<dependency id="Serilog" version="2.4.0" />
-			</group>
-			<group targetFramework="netstandard2.0">
-				<dependency id="Microsoft.AspNetCore.Http" version="2.1.1" />
-				<dependency id="Serilog" version="2.7.1" />
-			</group>
-			<group targetFramework="netstandard2.1">
-				<dependency id="Microsoft.AspNetCore.Http" version="2.2.2" />
-				<dependency id="Serilog" version="2.9.0" />
-			</group>
 			<group targetFramework=".NET6.0">
 				<dependency id="Serilog" version="2.9.0" />
 			</group>
 			<group targetFramework=".NET7.0">
+				<dependency id="Serilog" version="2.9.0" />
+			</group>
+			<group targetFramework=".NET8.0">
 				<dependency id="Serilog" version="2.9.0" />
 			</group>
 		</dependencies>
@@ -41,14 +34,15 @@
 			<group targetFramework=".NET7.0">
 				<frameworkReference name="Microsoft.AspNetCore.App" />
 			</group>
+			<group targetFramework=".NET8.0">
+				<frameworkReference name="Microsoft.AspNetCore.App" />
+			</group>
 		</frameworkReferences>
 	</metadata>
 	<files>
-		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\netstandard2.0\Serilog.Enrichers.ClientInfo.dll" target="lib/netstandard2.0" />
-		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\netstandard2.1\Serilog.Enrichers.ClientInfo.dll" target="lib/netstandard2.1" />
-		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net462\*.dll" target="lib/net462" />
 		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net6.0\Serilog.Enrichers.ClientInfo.dll" target="lib/net6.0" />
 		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net7.0\Serilog.Enrichers.ClientInfo.dll" target="lib/net7.0" />
+		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net8.0\Serilog.Enrichers.ClientInfo.dll" target="lib/net8.0" />
 		<file src="README.md" target="docs\" />
 		<file src="icon.png" target="assets\" />
 	</files>
