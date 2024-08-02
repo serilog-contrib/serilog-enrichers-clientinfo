@@ -14,6 +14,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{931596BA-056D-4E8C-9FED-6C60C0D1AB83}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		icon.png = icon.png
 		LICENSE = LICENSE
 		README.md = README.md
 		Serilog.Enrichers.ClientInfo.nuspec = Serilog.Enrichers.ClientInfo.nuspec

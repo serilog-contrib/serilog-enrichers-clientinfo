@@ -12,9 +12,10 @@
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Enrich logs with client IP, CorrelationId and HTTP request headers.</description>
 		<readme>docs\README.md</readme>
-		<releaseNotes></releaseNotes>
-		<copyright></copyright>
+		<icon>assets\icon.png</icon>
 		<tags>serilog enrichers enricher ip correlation-id request header</tags>
+		<copyright>© 2024 Serilog Contributors</copyright>
+		<releaseNotes>Fix #39 - ClientIpEnricher ignores updated HttpContext.Connection.RemoteIpAddress</releaseNotes>
 		<dependencies>
 			<group targetFramework="net462">
 				<dependency id="Serilog" version="2.4.0" />
