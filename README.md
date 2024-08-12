@@ -1,4 +1,5 @@
-# serilog-enrichers-clientinfo [![NuGet](http://img.shields.io/nuget/v/Serilog.Enrichers.ClientInfo.svg?style=flat)](https://www.nuget.org/packages/Serilog.Enrichers.ClientInfo/)
+# serilog-enrichers-clientinfo [![NuGet](http://img.shields.io/nuget/v/Serilog.Enrichers.ClientInfo.svg?style=flat)](https://www.nuget.org/packages/Serilog.Enrichers.ClientInfo/) [![](https://img.shields.io/nuget/dt/Serilog.Enrichers.ClientInfo.svg?label=nuget%20downloads)](Serilog.Enrichers.ClientInfo)
+
 Enrich logs with client IP, Correlation Id and HTTP request headers.
 
 Install the _Serilog.Enrichers.ClientInfo_ [NuGet package](https://www.nuget.org/packages/Serilog.Enrichers.ClientInfo/)
