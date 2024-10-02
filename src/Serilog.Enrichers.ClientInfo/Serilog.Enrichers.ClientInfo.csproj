@@ -9,7 +9,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	  <DebugType>embedded</DebugType>
 	  <EmbedAllSources>true</EmbedAllSources>
-	  <Version>2.1.1</Version>
+	  <Version>2.1.2</Version>
   </PropertyGroup>
 
 	<ItemGroup>

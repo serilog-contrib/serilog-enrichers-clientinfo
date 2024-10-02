@@ -15,7 +15,7 @@
 		<icon>assets\icon.png</icon>
 		<tags>serilog enrichers enricher ip correlation-id request header</tags>
 		<copyright>© 2024 Serilog Contributors</copyright>
-		<releaseNotes></releaseNotes>
+		<releaseNotes>Update documentation.</releaseNotes>
 		<dependencies>
 			<group targetFramework=".NET6.0">
 				<dependency id="Serilog" version="2.9.0" />
