@@ -11,19 +11,13 @@ namespace Serilog;
 public static class ClientInfoLoggerConfigurationExtensions
 {
     /// <summary>
-    ///   Registers the client IP enricher to enrich logs with client IP with 'X-forwarded-for'
-    ///   header information.
+    ///   Registers the client IP enricher to enrich logs with <see cref="Microsoft.AspNetCore.Http.ConnectionInfo.RemoteIpAddress"/> value.
     /// </summary>
     /// <param name="enrichmentConfiguration">The enrichment configuration.</param>
-    /// <param name="headerName">
-    ///   Set the 'X-Forwarded-For' header in case if service is behind proxy server. Default value
-    ///   is 'x-forwarded-for'.
-    /// </param>
     /// <exception cref="ArgumentNullException">enrichmentConfiguration</exception>
     /// <returns>The logger configuration so that multiple calls can be chained.</returns>
     public static LoggerConfiguration WithClientIp(
-        this LoggerEnrichmentConfiguration enrichmentConfiguration,
-        string headerName = "x-forwarded-for")
+        this LoggerEnrichmentConfiguration enrichmentConfiguration)
     {
         if (enrichmentConfiguration == null)
         {
