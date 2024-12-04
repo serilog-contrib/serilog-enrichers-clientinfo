@@ -1,23 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-	  <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
 		<AssemblyName>Serilog.Enrichers.ClientInfo</AssemblyName>
-    <RootNamespace>Serilog</RootNamespace>
-	  <LangVersion>latest</LangVersion>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<RootNamespace>Serilog</RootNamespace>
+		<LangVersion>latest</LangVersion>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-	  <DebugType>embedded</DebugType>
-	  <EmbedAllSources>true</EmbedAllSources>
-	  <Version>2.1.2</Version>
-  </PropertyGroup>
+		<DebugType>embedded</DebugType>
+		<EmbedAllSources>true</EmbedAllSources>
+		<Version>2.1.2</Version>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 
 	<ItemGroup>
-    <PackageReference Include="Serilog" Version="2.9.0" />
-  </ItemGroup>
+		<PackageReference Include="Serilog" Version="2.9.0" />
+	</ItemGroup>
 
 </Project>
