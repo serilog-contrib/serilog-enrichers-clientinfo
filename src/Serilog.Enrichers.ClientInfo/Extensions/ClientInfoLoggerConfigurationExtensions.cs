@@ -19,10 +19,7 @@ public static class ClientInfoLoggerConfigurationExtensions
     public static LoggerConfiguration WithClientIp(
         this LoggerEnrichmentConfiguration enrichmentConfiguration)
     {
-        if (enrichmentConfiguration == null)
-        {
-            throw new ArgumentNullException(nameof(enrichmentConfiguration));
-        }
+        ArgumentNullException.ThrowIfNull(enrichmentConfiguration, nameof(enrichmentConfiguration));
 
         return enrichmentConfiguration.With<ClientIpEnricher>();
     }
@@ -47,10 +44,7 @@ public static class ClientInfoLoggerConfigurationExtensions
         string headerName = "x-correlation-id",
         bool addValueIfHeaderAbsence = false)
     {
-        if (enrichmentConfiguration == null)
-        {
-            throw new ArgumentNullException(nameof(enrichmentConfiguration));
-        }
+        ArgumentNullException.ThrowIfNull(enrichmentConfiguration, nameof(enrichmentConfiguration));
 
         return enrichmentConfiguration.With(new CorrelationIdEnricher(headerName, addValueIfHeaderAbsence));
     }
@@ -67,15 +61,8 @@ public static class ClientInfoLoggerConfigurationExtensions
     public static LoggerConfiguration WithRequestHeader(this LoggerEnrichmentConfiguration enrichmentConfiguration,
         string headerName, string propertyName = null)
     {
-        if (enrichmentConfiguration == null)
-        {
-            throw new ArgumentNullException(nameof(enrichmentConfiguration));
-        }
-
-        if (headerName == null)
-        {
-            throw new ArgumentNullException(nameof(headerName));
-        }
+        ArgumentNullException.ThrowIfNull(enrichmentConfiguration, nameof(enrichmentConfiguration));
+        ArgumentNullException.ThrowIfNull(headerName, nameof(headerName));
 
         return enrichmentConfiguration.With(new ClientHeaderEnricher(headerName, propertyName));
     }
