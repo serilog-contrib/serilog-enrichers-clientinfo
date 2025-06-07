@@ -5,11 +5,11 @@
 		<AssemblyName>Serilog.Enrichers.ClientInfo</AssemblyName>
     <RootNamespace>Serilog</RootNamespace>
 	  <LangVersion>latest</LangVersion>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	  <DebugType>embedded</DebugType>
 	  <EmbedAllSources>true</EmbedAllSources>
 	  <Version>2.1.2</Version>
+	  <AssemblyVersion>2.1.2</AssemblyVersion>
   </PropertyGroup>
 
 	<ItemGroup>
