@@ -1,15 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-	  <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
 		<AssemblyName>Serilog.Enrichers.ClientInfo</AssemblyName>
     <RootNamespace>Serilog</RootNamespace>
 	  <LangVersion>latest</LangVersion>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	  <DebugType>embedded</DebugType>
 	  <EmbedAllSources>true</EmbedAllSources>
-	  <Version>2.1.2</Version>
-	  <AssemblyVersion>2.1.2</AssemblyVersion>
+	  <Version>2.2.0</Version>
+	  <AssemblyVersion>2.2.0</AssemblyVersion>
   </PropertyGroup>
 
 	<ItemGroup>
@@ -17,7 +16,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-    <PackageReference Include="Serilog" Version="2.9.0" />
-  </ItemGroup>
-
+		<PackageReference Include="Serilog" Version="4.3.0" />
+	</ItemGroup>
 </Project>
