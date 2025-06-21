@@ -14,35 +14,33 @@
 		<readme>docs\README.md</readme>
 		<icon>assets\icon.png</icon>
 		<tags>serilog enrichers enricher ip correlation-id request header</tags>
-		<copyright>© 2024 Serilog Contributors</copyright>
-		<releaseNotes>Update documentation.</releaseNotes>
+		<copyright>© 2025 Serilog Contributors</copyright>
+		<releaseNotes>
+		  - Add Support for .NET 9.0
+		  - Remove Support for .NET 6.0 and .NET 7.0
+		  - Update Serilog to version 4.3.0
+		  - Update dependencies
+		</releaseNotes>
 		<dependencies>
-			<group targetFramework=".NET6.0">
-				<dependency id="Serilog" version="2.9.0" />
-			</group>
-			<group targetFramework=".NET7.0">
-				<dependency id="Serilog" version="2.9.0" />
-			</group>
 			<group targetFramework=".NET8.0">
-				<dependency id="Serilog" version="2.9.0" />
+				<dependency id="Serilog" version="4.3.0" />
+			</group>
+			<group targetFramework=".NET9.0">
+				<dependency id="Serilog" version="4.3.0" />
 			</group>
 		</dependencies>
 		<frameworkReferences>
-			<group targetFramework=".NET6.0">
-				<frameworkReference name="Microsoft.AspNetCore.App" />
-			</group>
-			<group targetFramework=".NET7.0">
-				<frameworkReference name="Microsoft.AspNetCore.App" />
-			</group>
 			<group targetFramework=".NET8.0">
+				<frameworkReference name="Microsoft.AspNetCore.App" />
+			</group>
+			<group targetFramework=".NET9.0">
 				<frameworkReference name="Microsoft.AspNetCore.App" />
 			</group>
 		</frameworkReferences>
 	</metadata>
 	<files>
-		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net6.0\Serilog.Enrichers.ClientInfo.dll" target="lib/net6.0" />
-		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net7.0\Serilog.Enrichers.ClientInfo.dll" target="lib/net7.0" />
-		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net8.0\Serilog.Enrichers.ClientInfo.dll" target="lib/net8.0" />
+		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net8.0\*" target="lib/net8.0" />
+		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net9.0\*" target="lib/net9.0" />
 		<file src="README.md" target="docs\" />
 		<file src="icon.png" target="assets\" />
 	</files>
