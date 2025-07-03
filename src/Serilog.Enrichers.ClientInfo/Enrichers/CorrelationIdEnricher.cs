@@ -44,7 +44,7 @@ public class CorrelationIdEnricher : ILogEventEnricher
             return;
         }
 
-        if (httpContext.Items[CorrelationIdItemKey] is LogEventProperty logEventProperty)
+        if (httpContext.Items.TryGetValue(CorrelationIdItemKey, out var value) && value is LogEventProperty logEventProperty)
         {
             logEvent.AddPropertyIfAbsent(logEventProperty);
             return;

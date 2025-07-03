@@ -46,7 +46,7 @@ public class ClientHeaderEnricher : ILogEventEnricher
             return;
         }
 
-        if (httpContext.Items[_clientHeaderItemKey] is LogEventProperty logEventProperty)
+        if (httpContext.Items.TryGetValue(_clientHeaderItemKey, out var value) && value is LogEventProperty logEventProperty)
         {
             logEvent.AddPropertyIfAbsent(logEventProperty);
             return;

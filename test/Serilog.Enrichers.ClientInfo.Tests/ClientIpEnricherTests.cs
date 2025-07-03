@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using NSubstitute;
 using Serilog.Events;
+using System.Collections.Generic;
 using System.Net;
 using Xunit;
 
@@ -82,5 +83,31 @@ public class ClientIpEnricherTests
 
         // Assert
         Assert.Null(exception);
+    }
+
+    [Fact]
+    public void EnrichLogWithClientIp_WhenKeyNotInItems_ShouldWorkCorrectly()
+    {
+        // Arrange
+        _contextAccessor.HttpContext.Connection.RemoteIpAddress = IPAddress.Loopback;
+        var ipEnricher = new ClientIpEnricher(_contextAccessor);
+        
+        // Ensure the Items dictionary doesn't contain our key initially
+        _contextAccessor.HttpContext.Items.Clear();
+        
+        LogEvent evt = null;
+        var log = new LoggerConfiguration()
+            .Enrich.With(ipEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act - This should work without throwing any exceptions
+        var exception = Record.Exception(() => log.Information("Test log message"));
+
+        // Assert
+        Assert.Null(exception);
+        Assert.NotNull(evt);
+        Assert.True(evt.Properties.ContainsKey("ClientIp"));
+        Assert.Equal(IPAddress.Loopback.ToString(), evt.Properties["ClientIp"].LiteralValue());
     }
 }

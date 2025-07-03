@@ -38,7 +38,7 @@ public class ClientIpEnricher : ILogEventEnricher
 
         var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
-        if (httpContext.Items[IpAddressItemKey] is LogEventProperty logEventProperty)
+        if (httpContext.Items.TryGetValue(IpAddressItemKey, out var value) && value is LogEventProperty logEventProperty)
         {
             if (!((ScalarValue)logEventProperty.Value).Value.ToString()!.Equals(ipAddress))
             {
