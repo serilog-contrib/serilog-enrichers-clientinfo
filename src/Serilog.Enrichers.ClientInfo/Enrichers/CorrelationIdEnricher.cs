@@ -9,6 +9,7 @@ namespace Serilog.Enrichers;
 public class CorrelationIdEnricher : ILogEventEnricher
 {
     private const string CorrelationIdItemKey = "Serilog_CorrelationId";
+    private const string CorrelationIdValueKey = "Serilog_CorrelationId_Value";
     private const string PropertyName = "CorrelationId";
     private readonly string _headerKey;
     private readonly bool _addValueIfHeaderAbsence;
@@ -47,6 +48,14 @@ public class CorrelationIdEnricher : ILogEventEnricher
         if (httpContext.Items[CorrelationIdItemKey] is LogEventProperty logEventProperty)
         {
             logEvent.AddPropertyIfAbsent(logEventProperty);
+            
+            // Ensure the string value is also available if not already stored
+            if (!httpContext.Items.ContainsKey(CorrelationIdValueKey))
+            {
+                var correlationIdValue = ((ScalarValue)logEventProperty.Value).Value as string;
+                httpContext.Items.Add(CorrelationIdValueKey, correlationIdValue);
+            }
+            
             return;
         }
 
@@ -76,5 +85,6 @@ public class CorrelationIdEnricher : ILogEventEnricher
         logEvent.AddOrUpdateProperty(correlationIdProperty);
 
         httpContext.Items.Add(CorrelationIdItemKey, correlationIdProperty);
+        httpContext.Items.Add(CorrelationIdValueKey, correlationId);
     }
 }
