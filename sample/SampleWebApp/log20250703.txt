@@ -1,0 +1,8 @@
+[18:05:31] INF Clint IP: CorrelationId: Client Agent: Now listening on: http://localhost:5000
+[18:05:31] INF Clint IP: CorrelationId: Client Agent: Application started. Press Ctrl+C to shut down.
+[18:05:31] INF Clint IP: CorrelationId: Client Agent: Hosting environment: Production
+[18:05:31] INF Clint IP: CorrelationId: Client Agent: Content root path: /home/runner/work/serilog-enrichers-clientinfo/serilog-enrichers-clientinfo/sample/SampleWebApp
+[18:05:40] INF Clint IP:127.0.0.1 CorrelationId:f6895ea2-bb8a-4780-8afe-a1ea8310b55e Client Agent:curl/8.5.0 Request starting HTTP/1.1 GET http://localhost:5000/weatherforecast - null null
+[18:05:40] INF Clint IP:127.0.0.1 CorrelationId:f6895ea2-bb8a-4780-8afe-a1ea8310b55e Client Agent:curl/8.5.0 Executing endpoint 'HTTP: GET /weatherforecast'
+[18:05:40] INF Clint IP:127.0.0.1 CorrelationId:f6895ea2-bb8a-4780-8afe-a1ea8310b55e Client Agent:curl/8.5.0 Executed endpoint 'HTTP: GET /weatherforecast'
+[18:05:40] INF Clint IP:127.0.0.1 CorrelationId:f6895ea2-bb8a-4780-8afe-a1ea8310b55e Client Agent:curl/8.5.0 Request finished HTTP/1.1 GET http://localhost:5000/weatherforecast - 200 null application/json; charset=utf-8 108.4583ms
