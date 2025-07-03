@@ -48,6 +48,8 @@ or in `appsettings.json` file:
 
 ### ClientIp
 `ClientIp` enricher reads client IP from `HttpContext.Connection.RemoteIpAddress`. Since version 2.1, for [security reasons](https://nvd.nist.gov/vuln/detail/CVE-2023-22474), it no longer reads the `x-forwarded-for` header. To handle forwarded headers, configure [ForwardedHeadersOptions](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-7.0#forwarded-headers-middleware-order). If you still want to log `x-forwarded-for`, you can use the `RequestHeader` enricher.
+
+#### Basic Usage
 ```csharp
 Log.Logger = new LoggerConfiguration()
     .Enrich.WithClientIp()
@@ -67,6 +69,22 @@ or
   }
 }
 ```
+
+#### IP Version Preferences
+You can configure the enricher to prefer or filter specific IP versions (IPv4 or IPv6):
+
+```csharp
+Log.Logger = new LoggerConfiguration()
+    .Enrich.WithClientIp(IpVersionPreference.Ipv4Only)
+    ...
+```
+
+Available IP version preferences:
+- `None` (default): No preference - use whatever IP version is available
+- `PreferIpv4`: Prefer IPv4 addresses when multiple are available, fallback to IPv6
+- `PreferIpv6`: Prefer IPv6 addresses when multiple are available, fallback to IPv4  
+- `Ipv4Only`: Only log IPv4 addresses, ignore IPv6 addresses
+- `Ipv6Only`: Only log IPv6 addresses, ignore IPv4 addresses
 ### CorrelationId
 For `CorrelationId` enricher you can:
 - Configure the header name and default header name is `x-correlation-id`
