@@ -4,16 +4,16 @@ using Serilog.Events;
 
 namespace Serilog.Enrichers;
 
-/// <inheritdoc/>
+/// <inheritdoc />
 public class ClientHeaderEnricher : ILogEventEnricher
 {
     private readonly string _clientHeaderItemKey;
-    private readonly string _propertyName;
-    private readonly string _headerKey;
     private readonly IHttpContextAccessor _contextAccessor;
+    private readonly string _headerKey;
+    private readonly string _propertyName;
 
     /// <summary>
-    ///   Initializes a new instance of the <see cref="ClientHeaderEnricher"/> class.
+    ///     Initializes a new instance of the <see cref="ClientHeaderEnricher" /> class.
     /// </summary>
     /// <param name="headerKey">The key of the header.</param>
     /// <param name="propertyName">The name of the property.</param>
@@ -25,9 +25,7 @@ public class ClientHeaderEnricher : ILogEventEnricher
     internal ClientHeaderEnricher(string headerKey, string propertyName, IHttpContextAccessor contextAccessor)
     {
         _headerKey = headerKey;
-        _propertyName = string.IsNullOrWhiteSpace(propertyName)
-            ? headerKey.Replace("-", "")
-            : propertyName;
+        _propertyName = string.IsNullOrWhiteSpace(propertyName) ? headerKey.Replace("-", "") : propertyName;
         _clientHeaderItemKey = $"Serilog_{headerKey}";
         _contextAccessor = contextAccessor;
     }
@@ -37,25 +35,23 @@ public class ClientHeaderEnricher : ILogEventEnricher
         _contextAccessor = contextAccessor;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {
-        var httpContext = _contextAccessor.HttpContext;
-        if (httpContext == null)
-        {
-            return;
-        }
+        HttpContext httpContext = _contextAccessor.HttpContext;
+        if (httpContext == null) return;
 
-        if (httpContext.Items.TryGetValue(_clientHeaderItemKey, out var value) && value is LogEventProperty logEventProperty)
+        if (httpContext.Items.TryGetValue(_clientHeaderItemKey, out object value) &&
+            value is LogEventProperty logEventProperty)
         {
             logEvent.AddPropertyIfAbsent(logEventProperty);
             return;
         }
 
-        var headerValue = httpContext.Request.Headers[_headerKey].ToString();
+        string headerValue = httpContext.Request.Headers[_headerKey].ToString();
         headerValue = string.IsNullOrWhiteSpace(headerValue) ? null : headerValue;
 
-        var logProperty = new LogEventProperty(_propertyName, new ScalarValue(headerValue));
+        LogEventProperty logProperty = new(_propertyName, new ScalarValue(headerValue));
         httpContext.Items.Add(_clientHeaderItemKey, logProperty);
 
         logEvent.AddPropertyIfAbsent(logProperty);

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using NSubstitute;
+using Serilog.Core;
 using Serilog.Events;
 using System;
 using Xunit;
@@ -12,7 +13,7 @@ public class ClientHeaderEnricherTests
 
     public ClientHeaderEnricherTests()
     {
-        var httpContext = new DefaultHttpContext();
+        DefaultHttpContext httpContext = new();
         _contextAccessor = Substitute.For<IHttpContextAccessor>();
         _contextAccessor.HttpContext.Returns(httpContext);
     }
@@ -21,15 +22,15 @@ public class ClientHeaderEnricherTests
     public void EnrichLogWithClientHeader_WhenHttpRequestContainHeader_ShouldCreateNamedHeaderValueProperty()
     {
         // Arrange
-        var headerKey = "RequestId";
-        var propertyName = "HttpRequestId";
-        var headerValue = Guid.NewGuid().ToString();
+        string headerKey = "RequestId";
+        string propertyName = "HttpRequestId";
+        string headerValue = Guid.NewGuid().ToString();
         _contextAccessor.HttpContext!.Request!.Headers[headerKey] = headerValue;
 
-        var clientHeaderEnricher = new ClientHeaderEnricher(headerKey, propertyName, _contextAccessor);
+        ClientHeaderEnricher clientHeaderEnricher = new(headerKey, propertyName, _contextAccessor);
 
         LogEvent evt = null;
-        var log = new LoggerConfiguration()
+        Logger log = new LoggerConfiguration()
             .Enrich.With(clientHeaderEnricher)
             .WriteTo.Sink(new DelegatingSink(e => evt = e))
             .CreateLogger();
@@ -48,14 +49,14 @@ public class ClientHeaderEnricherTests
     public void EnrichLogWithClientHeader_WhenHttpRequestContainHeader_ShouldCreateHeaderValueProperty()
     {
         // Arrange
-        var headerKey = "RequestId";
-        var headerValue = Guid.NewGuid().ToString();
+        string headerKey = "RequestId";
+        string headerValue = Guid.NewGuid().ToString();
         _contextAccessor!.HttpContext!.Request!.Headers[headerKey] = headerValue;
 
-        var clientHeaderEnricher = new ClientHeaderEnricher(headerKey, propertyName: string.Empty, _contextAccessor);
+        ClientHeaderEnricher clientHeaderEnricher = new(headerKey, string.Empty, _contextAccessor);
 
         LogEvent evt = null;
-        var log = new LoggerConfiguration()
+        Logger log = new LoggerConfiguration()
             .Enrich.With(clientHeaderEnricher)
             .WriteTo.Sink(new DelegatingSink(e => evt = e))
             .CreateLogger();
@@ -71,20 +72,21 @@ public class ClientHeaderEnricherTests
     }
 
     [Fact]
-    public void EnrichLogWithMultipleClientHeaderEnricher_WhenHttpRequestContainHeaders_ShouldCreateHeaderValuesProperty()
+    public void
+        EnrichLogWithMultipleClientHeaderEnricher_WhenHttpRequestContainHeaders_ShouldCreateHeaderValuesProperty()
     {
         // Arrange
-        var headerKey1 = "Header1";
-        var headerKey2 = "User-Agent";
-        var headerValue1 = Guid.NewGuid().ToString();
-        var headerValue2 = Guid.NewGuid().ToString();
+        string headerKey1 = "Header1";
+        string headerKey2 = "User-Agent";
+        string headerValue1 = Guid.NewGuid().ToString();
+        string headerValue2 = Guid.NewGuid().ToString();
         _contextAccessor!.HttpContext!.Request!.Headers[headerKey1] = headerValue1;
         _contextAccessor!.HttpContext!.Request!.Headers[headerKey2] = headerValue2;
-        var clientHeaderEnricher1 = new ClientHeaderEnricher(headerKey1, propertyName: string.Empty, _contextAccessor);
-        var clientHeaderEnricher2 = new ClientHeaderEnricher(headerKey2, propertyName: string.Empty, _contextAccessor);
+        ClientHeaderEnricher clientHeaderEnricher1 = new(headerKey1, string.Empty, _contextAccessor);
+        ClientHeaderEnricher clientHeaderEnricher2 = new(headerKey2, string.Empty, _contextAccessor);
 
         LogEvent evt = null;
-        var log = new LoggerConfiguration()
+        Logger log = new LoggerConfiguration()
             .Enrich.With(clientHeaderEnricher1)
             .Enrich.With(clientHeaderEnricher2)
             .WriteTo.Sink(new DelegatingSink(e => evt = e))
@@ -106,11 +108,11 @@ public class ClientHeaderEnricherTests
     public void EnrichLogWithClientHeader_WhenHttpRequestNotContainHeader_ShouldCreateHeaderValuePropertyWithNoValue()
     {
         // Arrange
-        var headerKey = "RequestId";
-        var clientHeaderEnricher = new ClientHeaderEnricher(headerKey, propertyName: string.Empty, _contextAccessor);
+        string headerKey = "RequestId";
+        ClientHeaderEnricher clientHeaderEnricher = new(headerKey, string.Empty, _contextAccessor);
 
         LogEvent evt = null;
-        var log = new LoggerConfiguration()
+        Logger log = new LoggerConfiguration()
             .Enrich.With(clientHeaderEnricher)
             .WriteTo.Sink(new DelegatingSink(e => evt = e))
             .CreateLogger();
@@ -126,16 +128,39 @@ public class ClientHeaderEnricherTests
     }
 
     [Fact]
+    public void EnrichLogWithClientIp_WhenKeyNotInItems_ShouldWorkCorrectly()
+    {
+        // Arrange
+        string headerKey = "x-dummy-header";
+        ClientHeaderEnricher clientHeaderEnricher = new(headerKey, string.Empty, _contextAccessor);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(clientHeaderEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        log.Information("Testing log enricher.");
+
+        // Act - This should work without throwing any exceptions
+        Exception exception = Record.Exception(() => log.Information("Test log message"));
+
+        // Assert
+        Assert.Null(exception);
+        Assert.NotNull(evt);
+    }
+
+    [Fact]
     public void WithRequestHeader_ThenLoggerIsCalled_ShouldNotThrowException()
     {
         // Arrange
-        var logger = new LoggerConfiguration()
+        Logger logger = new LoggerConfiguration()
             .Enrich.WithRequestHeader("HeaderName")
             .WriteTo.Sink(new DelegatingSink(_ => { }))
             .CreateLogger();
 
         // Act
-        var exception = Record.Exception(() => logger.Information("LOG"));
+        Exception exception = Record.Exception(() => logger.Information("LOG"));
 
         // Assert
         Assert.Null(exception);

@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Http;
 using Serilog.Core;
 using Serilog.Events;
-using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Serilog.Enrichers.ClientInfo.Tests")]
 
 namespace Serilog.Enrichers;
 
-/// <inheritdoc/>
+/// <inheritdoc />
 public class ClientIpEnricher : ILogEventEnricher
 {
     private const string IpAddressPropertyName = "ClientIp";
@@ -16,7 +16,7 @@ public class ClientIpEnricher : ILogEventEnricher
     private readonly IHttpContextAccessor _contextAccessor;
 
     /// <summary>
-    ///   Initializes a new instance of the <see cref="ClientIpEnricher"/> class.
+    ///     Initializes a new instance of the <see cref="ClientIpEnricher" /> class.
     /// </summary>
     public ClientIpEnricher() : this(new HttpContextAccessor())
     {
@@ -27,23 +27,19 @@ public class ClientIpEnricher : ILogEventEnricher
         _contextAccessor = contextAccessor;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {
-        var httpContext = _contextAccessor.HttpContext;
-        if (httpContext == null)
-        {
-            return;
-        }
+        HttpContext httpContext = _contextAccessor.HttpContext;
+        if (httpContext == null) return;
 
-        var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        string ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
-        if (httpContext.Items.TryGetValue(IpAddressItemKey, out var value) && value is LogEventProperty logEventProperty)
+        if (httpContext.Items.TryGetValue(IpAddressItemKey, out object value) &&
+            value is LogEventProperty logEventProperty)
         {
             if (!((ScalarValue)logEventProperty.Value).Value.ToString()!.Equals(ipAddress))
-            {
                 logEventProperty = new LogEventProperty(IpAddressPropertyName, new ScalarValue(ipAddress));
-            }
 
             logEvent.AddPropertyIfAbsent(logEventProperty);
             return;

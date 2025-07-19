@@ -1,27 +1,28 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using Serilog.Core;
 using Serilog.Events;
-using System;
 
 namespace Serilog.Enrichers;
 
-/// <inheritdoc/>
+/// <inheritdoc />
 public class CorrelationIdEnricher : ILogEventEnricher
 {
     private const string CorrelationIdItemKey = "Serilog_CorrelationId";
     private const string PropertyName = "CorrelationId";
-    private readonly string _headerKey;
     private readonly bool _addValueIfHeaderAbsence;
     private readonly IHttpContextAccessor _contextAccessor;
+    private readonly string _headerKey;
 
     /// <summary>
-    ///   Initializes a new instance of the <see cref="CorrelationIdEnricher"/> class.
+    ///     Initializes a new instance of the <see cref="CorrelationIdEnricher" /> class.
     /// </summary>
     /// <param name="headerKey">
-    ///   The header key used to retrieve the correlation ID from the HTTP request or response headers.
+    ///     The header key used to retrieve the correlation ID from the HTTP request or response headers.
     /// </param>
     /// <param name="addValueIfHeaderAbsence">
-    ///   Determines whether to add a new correlation ID value if the header is absent.
+    ///     Determines whether to add a new correlation ID value if the header is absent.
     /// </param>
     public CorrelationIdEnricher(string headerKey, bool addValueIfHeaderAbsence)
         : this(headerKey, addValueIfHeaderAbsence, new HttpContextAccessor())
@@ -35,44 +36,34 @@ public class CorrelationIdEnricher : ILogEventEnricher
         _contextAccessor = contextAccessor;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {
-        var httpContext = _contextAccessor.HttpContext;
-        if (httpContext == null)
-        {
-            return;
-        }
+        HttpContext httpContext = _contextAccessor.HttpContext;
+        if (httpContext == null) return;
 
-        if (httpContext.Items.TryGetValue(CorrelationIdItemKey, out var value) && value is LogEventProperty logEventProperty)
+        if (httpContext.Items.TryGetValue(CorrelationIdItemKey, out object value) &&
+            value is LogEventProperty logEventProperty)
         {
             logEvent.AddPropertyIfAbsent(logEventProperty);
             return;
         }
 
-        var requestHeader = httpContext.Request.Headers[_headerKey];
-        var responseHeader = httpContext.Response.Headers[_headerKey];
+        StringValues requestHeader = httpContext.Request.Headers[_headerKey];
+        StringValues responseHeader = httpContext.Response.Headers[_headerKey];
 
         string correlationId;
 
         if (!string.IsNullOrWhiteSpace(requestHeader))
-        {
             correlationId = requestHeader;
-        }
         else if (!string.IsNullOrWhiteSpace(responseHeader))
-        {
             correlationId = responseHeader;
-        }
         else if (_addValueIfHeaderAbsence)
-        {
             correlationId = Guid.NewGuid().ToString();
-        }
         else
-        {
             correlationId = null;
-        }
 
-        var correlationIdProperty = new LogEventProperty(PropertyName, new ScalarValue(correlationId));
+        LogEventProperty correlationIdProperty = new(PropertyName, new ScalarValue(correlationId));
         logEvent.AddOrUpdateProperty(correlationIdProperty);
 
         httpContext.Items.Add(CorrelationIdItemKey, correlationIdProperty);
