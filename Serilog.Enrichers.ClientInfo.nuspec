@@ -16,10 +16,7 @@
 		<tags>serilog enrichers enricher ip correlation-id request header</tags>
 		<copyright>© 2025 Serilog Contributors</copyright>
 		<releaseNotes>
-		  - Add Support for .NET 9.0
-		  - Remove Support for .NET 6.0 and .NET 7.0
-		  - Update Serilog to version 4.3.0
-		  - Update dependencies
+			- Fix KeyNotFoundException in all enrichers by using TryGetValue instead of direct dictionary access
 		</releaseNotes>
 		<dependencies>
 			<group targetFramework=".NET8.0">
