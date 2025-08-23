@@ -46,6 +46,14 @@ public class CorrelationIdEnricher : ILogEventEnricher
             value is LogEventProperty logEventProperty)
         {
             logEvent.AddPropertyIfAbsent(logEventProperty);
+
+            // Ensure the string value is also available if not already stored
+            if (!httpContext.Items.ContainsKey(Constants.CorrelationIdValueKey))
+            {
+                string correlationIdValue = ((ScalarValue)logEventProperty.Value).Value as string;
+                httpContext.Items.Add(Constants.CorrelationIdValueKey, correlationIdValue);
+            }
+
             return;
         }
 
@@ -67,5 +75,6 @@ public class CorrelationIdEnricher : ILogEventEnricher
         logEvent.AddOrUpdateProperty(correlationIdProperty);
 
         httpContext.Items.Add(CorrelationIdItemKey, correlationIdProperty);
+        httpContext.Items.Add(Constants.CorrelationIdValueKey, correlationId);
     }
 }
