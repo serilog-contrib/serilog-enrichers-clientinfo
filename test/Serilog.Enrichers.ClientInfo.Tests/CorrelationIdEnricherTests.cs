@@ -286,9 +286,7 @@ public class CorrelationIdEnricherTests
 
         // Test that the old way (hacky way) still works
         HttpContext httpContext = _contextAccessor.HttpContext!;
-        string retrievedCorrelationIdOldWay = null;
-
-        if (httpContext.Items.TryGetValue("Serilog_CorrelationId", out object correlationIdItem) &&
+        if (httpContext.Items.TryGetValue(CorrelationIdEnricher.CorrelationIdItemKey, out object correlationIdItem) &&
             correlationIdItem is LogEventProperty { Name: "CorrelationId" } correlationIdProperty)
             retrievedCorrelationIdOldWay = ((ScalarValue)correlationIdProperty.Value).Value as string;
 
