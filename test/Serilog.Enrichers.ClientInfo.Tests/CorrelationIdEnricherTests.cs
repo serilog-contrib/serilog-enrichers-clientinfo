@@ -162,6 +162,147 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact]
+    public void GetCorrelationId_WhenHttpRequestContainCorrelationHeader_ShouldReturnCorrelationIdFromHttpContext()
+    {
+        // Arrange
+        string correlationId = Guid.NewGuid().ToString();
+        _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = correlationId;
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(correlationIdEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Has a correlation id.");
+        string retrievedCorrelationId = _contextAccessor.HttpContext!.GetCorrelationId();
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.Equal(correlationId, retrievedCorrelationId);
+    }
+
+    [Fact]
+    public void
+        GetCorrelationId_WhenHttpRequestNotContainCorrelationHeaderAndAddDefaultValueIsTrue_ShouldReturnGeneratedCorrelationIdFromHttpContext()
+    {
+        // Arrange
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, true, _contextAccessor);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(correlationIdEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Has a correlation id.");
+        string retrievedCorrelationId = _contextAccessor.HttpContext!.GetCorrelationId();
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.NotNull(retrievedCorrelationId);
+        Assert.NotEmpty(retrievedCorrelationId);
+        // Verify it's a valid GUID format
+        Assert.True(Guid.TryParse(retrievedCorrelationId, out _));
+    }
+
+    [Fact]
+    public void
+        GetCorrelationId_WhenHttpRequestNotContainCorrelationHeaderAndAddDefaultValueIsFalse_ShouldReturnNullFromHttpContext()
+    {
+        // Arrange
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(correlationIdEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Has a correlation id.");
+        string retrievedCorrelationId = _contextAccessor.HttpContext!.GetCorrelationId();
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.Null(retrievedCorrelationId);
+    }
+
+    [Fact]
+    public void GetCorrelationId_WhenCalledMultipleTimes_ShouldReturnSameCorrelationId()
+    {
+        // Arrange
+        string correlationId = Guid.NewGuid().ToString();
+        _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = correlationId;
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
+
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(correlationIdEnricher)
+            .WriteTo.Sink(new DelegatingSink(_ => { }))
+            .CreateLogger();
+
+        // Act
+        log.Information("First log message.");
+        string firstRetrieval = _contextAccessor.HttpContext!.GetCorrelationId();
+
+        log.Information("Second log message.");
+        string secondRetrieval = _contextAccessor.HttpContext!.GetCorrelationId();
+
+        // Assert
+        Assert.Equal(correlationId, firstRetrieval);
+        Assert.Equal(correlationId, secondRetrieval);
+        Assert.Equal(firstRetrieval, secondRetrieval);
+    }
+
+    [Fact]
+    public void GetCorrelationId_WhenHttpContextIsNull_ShouldReturnNull()
+    {
+        // Arrange & Act
+        string result = HttpContextExtensions.GetCorrelationId(null);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void EnrichLogWithCorrelationId_BackwardCompatibility_OldRetrievalMethodShouldStillWork()
+    {
+        // Arrange
+        string correlationId = Guid.NewGuid().ToString();
+        _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = correlationId;
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(correlationIdEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Has a correlation id.");
+
+        // Test that the old way (hacky way) still works
+        HttpContext httpContext = _contextAccessor.HttpContext!;
+        string retrievedCorrelationIdOldWay = null;
+
+        if (httpContext.Items.TryGetValue("Serilog_CorrelationId", out object correlationIdItem) &&
+            correlationIdItem is LogEventProperty { Name: "CorrelationId" } correlationIdProperty)
+            retrievedCorrelationIdOldWay = ((ScalarValue)correlationIdProperty.Value).Value as string;
+
+        // Test that the new way also works
+        string retrievedCorrelationIdNewWay = httpContext.GetCorrelationId();
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.Equal(correlationId, retrievedCorrelationIdOldWay);
+        Assert.Equal(correlationId, retrievedCorrelationIdNewWay);
+        Assert.Equal(retrievedCorrelationIdOldWay, retrievedCorrelationIdNewWay);
+    }
+
+    [Fact]
     public void WithClientIp_ThenLoggerIsCalled_ShouldNotThrowException()
     {
         // Arrange
