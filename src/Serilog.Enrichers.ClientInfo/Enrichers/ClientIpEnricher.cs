@@ -57,7 +57,6 @@ public class ClientIpEnricher : ILogEventEnricher
             value is LogEventProperty logEventProperty)
         {
             if (!((ScalarValue)logEventProperty.Value).Value!.ToString()!.Equals(ipAddress))
-
                 logEventProperty = new LogEventProperty(IpAddressPropertyName, new ScalarValue(ipAddress));
 
             logEvent.AddPropertyIfAbsent(logEventProperty);

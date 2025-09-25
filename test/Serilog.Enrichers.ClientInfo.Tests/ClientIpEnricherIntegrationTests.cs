@@ -22,10 +22,12 @@ public class ClientIpEnricherIntegrationTests(CustomWebApplicationFactory factor
         // Act
         HttpResponseMessage response = await client.GetAsync("/");
         IReadOnlyList<LogEvent> logs = DelegatingSink.Logs;
+
         List<KeyValuePair<string, LogEventPropertyValue>> allClientIpLogs = logs
             .SelectMany(l => l.Properties)
             .Where(p => p.Key == "ClientIp")
             .ToList();
+
         List<KeyValuePair<string, LogEventPropertyValue>> forwardedClientIpLogs = logs
             .SelectMany(l => l.Properties)
             .Where(p => p.Key == "ClientIp" && p.Value.LiteralValue().Equals(ip))
@@ -33,6 +35,6 @@ public class ClientIpEnricherIntegrationTests(CustomWebApplicationFactory factor
 
         // Assert
         response.EnsureSuccessStatusCode();
-        Assert.Equal(forwardedClientIpLogs.Count, allClientIpLogs.Count);
+        Assert.Equal(allClientIpLogs.Count, forwardedClientIpLogs.Count);
     }
 }
