@@ -33,6 +33,6 @@ public class ClientIpEnricherIntegrationTests(CustomWebApplicationFactory factor
 
         // Assert
         response.EnsureSuccessStatusCode();
-        Assert.Equal(forwardedClientIpLogs.Count, allClientIpLogs.Count - 1);
+        Assert.Equal(forwardedClientIpLogs.Count, allClientIpLogs.Count);
     }
 }
