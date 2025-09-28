@@ -1,17 +1,19 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using Microsoft.AspNetCore.Http;
 using Serilog.Configuration;
 using Serilog.Enrichers;
-using System;
 
 namespace Serilog;
 
 /// <summary>
-///   Extension methods for setting up client IP, client agent and correlation identifier enrichers <see cref="LoggerEnrichmentConfiguration"/>.
+///     Extension methods for setting up client IP, client agent and correlation identifier enrichers
+///     <see cref="LoggerEnrichmentConfiguration" />.
 /// </summary>
 public static class ClientInfoLoggerConfigurationExtensions
 {
     /// <summary>
-    ///   Registers the client IP enricher to enrich logs with <see cref="Microsoft.AspNetCore.Http.ConnectionInfo.RemoteIpAddress"/> value.
+    ///     Registers the client IP enricher to enrich logs with
+    ///     <see cref="Microsoft.AspNetCore.Http.ConnectionInfo.RemoteIpAddress" /> value.
     /// </summary>
     /// <param name="enrichmentConfiguration">The enrichment configuration.</param>
     /// <exception cref="ArgumentNullException">enrichmentConfiguration</exception>
@@ -25,17 +27,34 @@ public static class ClientInfoLoggerConfigurationExtensions
     }
 
     /// <summary>
-    ///   Registers the correlation id enricher to enrich logs with correlation id with
-    ///   'x-correlation-id' header information.
+    ///     Registers the client IP enricher to enrich logs with
+    ///     <see cref="Microsoft.AspNetCore.Http.ConnectionInfo.RemoteIpAddress" /> value.
+    /// </summary>
+    /// <param name="enrichmentConfiguration">The enrichment configuration.</param>
+    /// <param name="ipVersionPreference">The IP version preference for filtering IP addresses.</param>
+    /// <exception cref="ArgumentNullException">enrichmentConfiguration</exception>
+    /// <returns>The logger configuration so that multiple calls can be chained.</returns>
+    public static LoggerConfiguration WithClientIp(
+        this LoggerEnrichmentConfiguration enrichmentConfiguration,
+        IpVersionPreference ipVersionPreference)
+    {
+        ArgumentNullException.ThrowIfNull(enrichmentConfiguration, nameof(enrichmentConfiguration));
+
+        return enrichmentConfiguration.With(new ClientIpEnricher(ipVersionPreference));
+    }
+
+    /// <summary>
+    ///     Registers the correlation id enricher to enrich logs with correlation id with
+    ///     'x-correlation-id' header information.
     /// </summary>
     /// <param name="enrichmentConfiguration">The enrichment configuration.</param>
     /// <param name="headerName">
-    ///   Set the 'X-Correlation-Id' header in case if service is behind proxy server. Default value
-    ///   is 'x-correlation-id'.
+    ///     Set the 'X-Correlation-Id' header in case if service is behind proxy server. Default value
+    ///     is 'x-correlation-id'.
     /// </param>
     /// <param name="addValueIfHeaderAbsence">
-    ///   Add generated correlation id value if correlation id header not available in
-    ///   <see cref="HttpContext"/> header collection.
+    ///     Add generated correlation id value if correlation id header not available in
+    ///     <see cref="HttpContext" /> header collection.
     /// </param>
     /// <exception cref="ArgumentNullException">enrichmentConfiguration</exception>
     /// <returns>The logger configuration so that multiple calls can be chained.</returns>
@@ -50,7 +69,7 @@ public static class ClientInfoLoggerConfigurationExtensions
     }
 
     /// <summary>
-    ///   Registers the HTTP request header enricher to enrich logs with the header value.
+    ///     Registers the HTTP request header enricher to enrich logs with the header value.
     /// </summary>
     /// <param name="enrichmentConfiguration">The enrichment configuration.</param>
     /// <param name="propertyName">The property name of log</param>
