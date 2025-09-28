@@ -1,10 +1,14 @@
-﻿using System.Linq;
+﻿using Serilog.Events;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Serilog.Enrichers.ClientInfo.Tests;
 
-public class ClientIpEnricherIntegrationTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
+public class ClientIpEnricherIntegrationTests(CustomWebApplicationFactory factory)
+    : IClassFixture<CustomWebApplicationFactory>
 {
     [Fact]
     public async Task GetRoot_ReturnsHelloWorld()
@@ -12,23 +16,25 @@ public class ClientIpEnricherIntegrationTests(CustomWebApplicationFactory factor
         // Arrange
         const string ip = "1.2.3.4";
 
-        var client = factory.CreateClient();
+        HttpClient client = factory.CreateClient();
         client.DefaultRequestHeaders.Add("x-forwarded-for", ip);
 
         // Act
-        var response = await client.GetAsync("/");
-        var logs = DelegatingSink.Logs;
-        var allClientIpLogs = logs
+        HttpResponseMessage response = await client.GetAsync("/");
+        IReadOnlyList<LogEvent> logs = DelegatingSink.Logs;
+
+        List<KeyValuePair<string, LogEventPropertyValue>> allClientIpLogs = logs
             .SelectMany(l => l.Properties)
             .Where(p => p.Key == "ClientIp")
             .ToList();
-        var forwardedClientIpLogs = logs
+
+        List<KeyValuePair<string, LogEventPropertyValue>> forwardedClientIpLogs = logs
             .SelectMany(l => l.Properties)
             .Where(p => p.Key == "ClientIp" && p.Value.LiteralValue().Equals(ip))
             .ToList();
 
         // Assert
         response.EnsureSuccessStatusCode();
-        Assert.Equal(forwardedClientIpLogs.Count, allClientIpLogs.Count - 1);
+        Assert.Equal(allClientIpLogs.Count, forwardedClientIpLogs.Count);
     }
 }

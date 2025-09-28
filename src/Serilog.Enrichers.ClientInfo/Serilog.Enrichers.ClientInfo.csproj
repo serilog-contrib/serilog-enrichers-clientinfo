@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
 		<AssemblyName>Serilog.Enrichers.ClientInfo</AssemblyName>
@@ -17,5 +17,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="Serilog" Version="4.3.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Serilog.Enrichers.ClientInfo.Tests" />
 	</ItemGroup>
 </Project>
