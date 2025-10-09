@@ -85,6 +85,7 @@ Available IP version preferences:
 - `PreferIpv6`: Prefer IPv6 addresses when multiple are available, fallback to IPv4  
 - `Ipv4Only`: Only log IPv4 addresses, ignore IPv6 addresses
 - `Ipv6Only`: Only log IPv6 addresses, ignore IPv4 addresses
+  
 ### CorrelationId
 For `CorrelationId` enricher you can:
 - Configure the header name and default header name is `x-correlation-id`
@@ -112,6 +113,22 @@ or
   }
 }
 ```
+#### Retrieving Correlation ID
+You can easily retrieve the correlation ID from `HttpContext` using the `GetCorrelationId()` extension method:
+```csharp
+public void SomeControllerAction()
+{
+    // This will return the correlation ID that was enriched by the CorrelationIdEnricher
+    var correlationId = HttpContext.GetCorrelationId();
+
+    if (!string.IsNullOrEmpty(correlationId))
+    {
+        // You can use it for additional logging/tracing, etc
+    }
+}
+```
+This eliminates the need for manual casting and provides a clean API for accessing correlation IDs.
+
 ### RequestHeader
 You can use multiple `WithRequestHeader` to log different request headers. `WithRequestHeader` accepts two parameters; The first parameter `headerName` is the header name to log 
 and the second parameter is `propertyName` which is the log property name.
