@@ -16,24 +16,18 @@
 		<tags>serilog enrichers enricher ip correlation-id request header</tags>
 		<copyright>© 2025 Serilog Contributors</copyright>
 		<releaseNotes>
-			- Set the IP logging preference to IPv4 or IPv6, if conversion is supported.
+			- Remove dependency on Microsoft.AspNetCore.App framework.
 		</releaseNotes>
 		<dependencies>
 			<group targetFramework=".NET8.0">
+				<dependency id="Microsoft.AspNetCore.Http" version="2.3.0" />
 				<dependency id="Serilog" version="4.3.0" />
 			</group>
 			<group targetFramework=".NET9.0">
+				<dependency id="Microsoft.AspNetCore.Http" version="2.3.0" />
 				<dependency id="Serilog" version="4.3.0" />
 			</group>
 		</dependencies>
-		<frameworkReferences>
-			<group targetFramework=".NET8.0">
-				<frameworkReference name="Microsoft.AspNetCore.App" />
-			</group>
-			<group targetFramework=".NET9.0">
-				<frameworkReference name="Microsoft.AspNetCore.App" />
-			</group>
-		</frameworkReferences>
 	</metadata>
 	<files>
 		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net8.0\*" target="lib/net8.0" />
