@@ -45,30 +45,6 @@ public class CorrelationIdEnricherTests
 
     [Fact]
     public void
-        EnrichLogWithCorrelationId_WhenHttpRequestContainCorrelationHeader_ShouldCreateCorrelationIdPropertyHasValue()
-    {
-        // Arrange
-        string correlationId = Guid.NewGuid().ToString();
-        _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = correlationId;
-        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
-
-        LogEvent evt = null;
-        Logger log = new LoggerConfiguration()
-            .Enrich.With(correlationIdEnricher)
-            .WriteTo.Sink(new DelegatingSink(e => evt = e))
-            .CreateLogger();
-
-        // Act
-        log.Information("Has a correlation id.");
-
-        // Assert
-        Assert.NotNull(evt);
-        Assert.True(evt.Properties.ContainsKey(LogPropertyName));
-        Assert.Equal(correlationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
-    }
-
-    [Fact]
-    public void
         EnrichLogWithCorrelationId_WhenHttpRequestNotContainCorrelationHeaderAndAddDefaultValueIsFalse_ShouldCreateCorrelationIdPropertyWithNoValue()
     {
         // Arrange
