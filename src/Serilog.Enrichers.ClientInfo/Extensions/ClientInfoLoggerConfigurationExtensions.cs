@@ -56,16 +56,20 @@ public static class ClientInfoLoggerConfigurationExtensions
     ///     Add generated correlation id value if correlation id header not available in
     ///     <see cref="HttpContext" /> header collection.
     /// </param>
+    /// <param name="addCorrelationIdToResponse">
+    ///     Add correlation id value to <see cref="HttpContext.Response" /> header collection.
+    /// </param>
     /// <exception cref="ArgumentNullException">enrichmentConfiguration</exception>
     /// <returns>The logger configuration so that multiple calls can be chained.</returns>
     public static LoggerConfiguration WithCorrelationId(
         this LoggerEnrichmentConfiguration enrichmentConfiguration,
         string headerName = "x-correlation-id",
-        bool addValueIfHeaderAbsence = false)
+        bool addValueIfHeaderAbsence = false,
+        bool addCorrelationIdToResponse = false)
     {
         ArgumentNullException.ThrowIfNull(enrichmentConfiguration, nameof(enrichmentConfiguration));
 
-        return enrichmentConfiguration.With(new CorrelationIdEnricher(headerName, addValueIfHeaderAbsence));
+        return enrichmentConfiguration.With(new CorrelationIdEnricher(headerName, addValueIfHeaderAbsence, addCorrelationIdToResponse));
     }
 
     /// <summary>

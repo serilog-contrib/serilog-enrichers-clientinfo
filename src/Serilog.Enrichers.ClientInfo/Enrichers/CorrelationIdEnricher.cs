@@ -11,6 +11,7 @@ public class CorrelationIdEnricher : ILogEventEnricher
 {
     private const string CorrelationIdItemKey = "Serilog_CorrelationId";
     private const string PropertyName = "CorrelationId";
+    private readonly bool _addCorrelationIdToResponse;
     private readonly bool _addValueIfHeaderAbsence;
     private readonly IHttpContextAccessor _contextAccessor;
     private readonly string _headerKey;
@@ -24,15 +25,30 @@ public class CorrelationIdEnricher : ILogEventEnricher
     /// <param name="addValueIfHeaderAbsence">
     ///     Determines whether to add a new correlation ID value if the header is absent.
     /// </param>
-    public CorrelationIdEnricher(string headerKey, bool addValueIfHeaderAbsence)
-        : this(headerKey, addValueIfHeaderAbsence, new HttpContextAccessor())
+    /// <param name="addCorrelationIdToResponse">
+    ///     Determines whether to add correlation ID value to <see cref="HttpContext.Response" /> header collection.
+    /// </param>
+    public CorrelationIdEnricher(
+        string headerKey,
+        bool addValueIfHeaderAbsence,
+        bool addCorrelationIdToResponse)
+        : this(
+              headerKey,
+              addValueIfHeaderAbsence,
+              addCorrelationIdToResponse,
+              new HttpContextAccessor())
     {
     }
 
-    internal CorrelationIdEnricher(string headerKey, bool addValueIfHeaderAbsence, IHttpContextAccessor contextAccessor)
+    internal CorrelationIdEnricher(
+        string headerKey,
+        bool addValueIfHeaderAbsence,
+        bool addCorrelationIdToResponse,
+        IHttpContextAccessor contextAccessor)
     {
         _headerKey = headerKey;
         _addValueIfHeaderAbsence = addValueIfHeaderAbsence;
+        _addCorrelationIdToResponse = addCorrelationIdToResponse;
         _contextAccessor = contextAccessor;
     }
 
@@ -59,11 +75,22 @@ public class CorrelationIdEnricher : ILogEventEnricher
 
         string correlationId = PrepareCorrelationId(httpContext);
 
+        AddCorrelationIdToResponse(httpContext, correlationId);
+
         LogEventProperty correlationIdProperty = new(PropertyName, new ScalarValue(correlationId));
         logEvent.AddOrUpdateProperty(correlationIdProperty);
 
         httpContext.Items.Add(CorrelationIdItemKey, correlationIdProperty);
         httpContext.Items.Add(Constants.CorrelationIdValueKey, correlationId);
+    }
+
+    private void AddCorrelationIdToResponse(HttpContext httpContext, in string correlationId)
+    {
+        if (_addCorrelationIdToResponse
+            && !httpContext.Response.Headers.ContainsKey(_headerKey))
+        {
+            httpContext.Response.Headers[_headerKey] = correlationId;
+        }
     }
 
     private string PrepareCorrelationId(HttpContext httpContext)

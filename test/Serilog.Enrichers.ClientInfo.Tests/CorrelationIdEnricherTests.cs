@@ -26,7 +26,7 @@ public class CorrelationIdEnricherTests
         // Arrange
         string correlationId = Guid.NewGuid().ToString();
         _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = correlationId;
-        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, true, _contextAccessor);
 
         LogEvent evt = null;
         Logger log = new LoggerConfiguration()
@@ -41,6 +41,7 @@ public class CorrelationIdEnricherTests
         Assert.NotNull(evt);
         Assert.True(evt.Properties.ContainsKey(LogPropertyName));
         Assert.Equal(correlationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
+        Assert.Equal(correlationId, _contextAccessor.HttpContext!.Response.Headers[HeaderKey]);
     }
 
     [Fact]
@@ -48,7 +49,7 @@ public class CorrelationIdEnricherTests
         EnrichLogWithCorrelationId_WhenHttpRequestNotContainCorrelationHeaderAndAddDefaultValueIsFalse_ShouldCreateCorrelationIdPropertyWithNoValue()
     {
         // Arrange
-        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, false, _contextAccessor);
 
         LogEvent evt = null;
         Logger log = new LoggerConfiguration()
@@ -63,6 +64,7 @@ public class CorrelationIdEnricherTests
         Assert.NotNull(evt);
         Assert.True(evt.Properties.ContainsKey(LogPropertyName));
         Assert.Null(evt.Properties[LogPropertyName].LiteralValue());
+        Assert.False(_contextAccessor.HttpContext!.Response.Headers.ContainsKey(HeaderKey));
     }
 
     [Fact]
@@ -70,7 +72,7 @@ public class CorrelationIdEnricherTests
         EnrichLogWithCorrelationId_WhenHttpRequestNotContainCorrelationHeaderAndAddDefaultValueIsTrue_ShouldCreateCorrelationIdPropertyHasValue()
     {
         // Arrange
-        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, true, _contextAccessor);
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, true, true, _contextAccessor);
 
         LogEvent evt = null;
         Logger log = new LoggerConfiguration()
@@ -85,6 +87,8 @@ public class CorrelationIdEnricherTests
         Assert.NotNull(evt);
         Assert.True(evt.Properties.ContainsKey(LogPropertyName));
         Assert.NotNull(evt.Properties[LogPropertyName].LiteralValue().ToString());
+        Assert.NotNull(_contextAccessor.HttpContext!.Response.Headers[HeaderKey]);
+        Assert.Equal(evt.Properties[LogPropertyName].LiteralValue(), _contextAccessor.HttpContext!.Response.Headers[HeaderKey].ToString());
     }
 
     [Fact]
@@ -94,7 +98,7 @@ public class CorrelationIdEnricherTests
         // Arrange
         string correlationId = Guid.NewGuid().ToString();
         _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = correlationId;
-        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, true, _contextAccessor);
 
         LogEvent evt = null;
         Logger log = new LoggerConfiguration()
@@ -109,6 +113,7 @@ public class CorrelationIdEnricherTests
         Assert.NotNull(evt);
         Assert.True(evt.Properties.ContainsKey(LogPropertyName));
         Assert.Equal(correlationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
+        Assert.Equal(correlationId, _contextAccessor.HttpContext!.Response.Headers[HeaderKey]);
     }
 
     [Fact]
@@ -120,7 +125,7 @@ public class CorrelationIdEnricherTests
         string responseCorrelationId = Guid.NewGuid().ToString();
         _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = requestCorrelationId;
         _contextAccessor.HttpContext!.Response!.Headers[HeaderKey] = responseCorrelationId;
-        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, true, _contextAccessor);
 
         LogEvent evt = null;
         Logger log = new LoggerConfiguration()
@@ -135,6 +140,7 @@ public class CorrelationIdEnricherTests
         Assert.NotNull(evt);
         Assert.True(evt.Properties.ContainsKey(LogPropertyName));
         Assert.Equal(requestCorrelationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
+        Assert.Equal(responseCorrelationId, _contextAccessor.HttpContext!.Response.Headers[HeaderKey]);
     }
 
     [Fact]
@@ -143,7 +149,7 @@ public class CorrelationIdEnricherTests
         // Arrange
         string correlationId = Guid.NewGuid().ToString();
         _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = correlationId;
-        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, true, _contextAccessor);
 
         LogEvent evt = null;
         Logger log = new LoggerConfiguration()
@@ -158,6 +164,7 @@ public class CorrelationIdEnricherTests
         // Assert
         Assert.NotNull(evt);
         Assert.Equal(correlationId, retrievedCorrelationId);
+        Assert.Equal(correlationId, _contextAccessor.HttpContext!.Response.Headers[HeaderKey]);
     }
 
     [Fact]
@@ -165,7 +172,7 @@ public class CorrelationIdEnricherTests
         GetCorrelationId_WhenHttpRequestNotContainCorrelationHeaderAndAddDefaultValueIsTrue_ShouldReturnGeneratedCorrelationIdFromHttpContext()
     {
         // Arrange
-        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, true, _contextAccessor);
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, true, true, _contextAccessor);
 
         LogEvent evt = null;
         Logger log = new LoggerConfiguration()
@@ -176,11 +183,13 @@ public class CorrelationIdEnricherTests
         // Act
         log.Information("Has a correlation id.");
         string retrievedCorrelationId = _contextAccessor.HttpContext!.GetCorrelationId();
+        string correlationIdFromResponse = _contextAccessor.HttpContext!.Response.Headers[HeaderKey];
 
         // Assert
         Assert.NotNull(evt);
         Assert.NotNull(retrievedCorrelationId);
         Assert.NotEmpty(retrievedCorrelationId);
+        Assert.Equal(retrievedCorrelationId, correlationIdFromResponse);
         // Verify it's a valid GUID format
         Assert.True(Guid.TryParse(retrievedCorrelationId, out _));
     }
@@ -190,7 +199,7 @@ public class CorrelationIdEnricherTests
         GetCorrelationId_WhenHttpRequestNotContainCorrelationHeaderAndAddDefaultValueIsFalse_ShouldReturnNullFromHttpContext()
     {
         // Arrange
-        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, false, _contextAccessor);
 
         LogEvent evt = null;
         Logger log = new LoggerConfiguration()
@@ -205,6 +214,7 @@ public class CorrelationIdEnricherTests
         // Assert
         Assert.NotNull(evt);
         Assert.Null(retrievedCorrelationId);
+        Assert.False(_contextAccessor.HttpContext!.Response.Headers.ContainsKey(HeaderKey));
     }
 
     [Fact]
@@ -213,7 +223,7 @@ public class CorrelationIdEnricherTests
         // Arrange
         string correlationId = Guid.NewGuid().ToString();
         _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = correlationId;
-        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, false, _contextAccessor);
 
         Logger log = new LoggerConfiguration()
             .Enrich.With(correlationIdEnricher)
@@ -231,6 +241,7 @@ public class CorrelationIdEnricherTests
         Assert.Equal(correlationId, firstRetrieval);
         Assert.Equal(correlationId, secondRetrieval);
         Assert.Equal(firstRetrieval, secondRetrieval);
+        Assert.False(_contextAccessor.HttpContext!.Response.Headers.ContainsKey(HeaderKey));
     }
 
     [Fact]
@@ -249,7 +260,7 @@ public class CorrelationIdEnricherTests
         // Arrange
         string correlationId = Guid.NewGuid().ToString();
         _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = correlationId;
-        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, true, _contextAccessor);
 
         LogEvent evt = null;
         Logger log = new LoggerConfiguration()
@@ -276,6 +287,7 @@ public class CorrelationIdEnricherTests
         Assert.Equal(correlationId, retrievedCorrelationIdOldWay);
         Assert.Equal(correlationId, retrievedCorrelationIdNewWay);
         Assert.Equal(retrievedCorrelationIdOldWay, retrievedCorrelationIdNewWay);
+        Assert.Equal(correlationId, _contextAccessor.HttpContext!.Response.Headers[HeaderKey]);
     }
 
     [Fact]
