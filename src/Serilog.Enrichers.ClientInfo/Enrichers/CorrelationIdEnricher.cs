@@ -57,24 +57,45 @@ public class CorrelationIdEnricher : ILogEventEnricher
             return;
         }
 
-        StringValues requestHeader = httpContext.Request.Headers[_headerKey];
-        StringValues responseHeader = httpContext.Response.Headers[_headerKey];
-
-        string correlationId;
-
-        if (!string.IsNullOrWhiteSpace(requestHeader))
-            correlationId = requestHeader;
-        else if (!string.IsNullOrWhiteSpace(responseHeader))
-            correlationId = responseHeader;
-        else if (_addValueIfHeaderAbsence)
-            correlationId = Guid.NewGuid().ToString();
-        else
-            correlationId = null;
+        string correlationId = PrepareCorrelationId(httpContext);
 
         LogEventProperty correlationIdProperty = new(PropertyName, new ScalarValue(correlationId));
         logEvent.AddOrUpdateProperty(correlationIdProperty);
 
         httpContext.Items.Add(CorrelationIdItemKey, correlationIdProperty);
         httpContext.Items.Add(Constants.CorrelationIdValueKey, correlationId);
+    }
+
+    private string PrepareCorrelationId(HttpContext httpContext)
+    {
+        StringValues requestHeader = httpContext.Request.Headers[_headerKey];
+        string returnValue;
+
+        if (!string.IsNullOrWhiteSpace(requestHeader))
+        {
+            returnValue = requestHeader;
+        }
+        else
+        {
+            StringValues responseHeader = httpContext.Response.Headers[_headerKey];
+
+            if (!string.IsNullOrWhiteSpace(responseHeader))
+            {
+                returnValue = responseHeader;
+            }
+            else
+            {
+                if (_addValueIfHeaderAbsence)
+                {
+                    returnValue = Guid.NewGuid().ToString();
+                }
+                else
+                {
+                    returnValue = null;
+                }
+            }
+        }
+
+        return returnValue;
     }
 }
