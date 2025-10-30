@@ -84,7 +84,7 @@ public class CorrelationIdEnricher : ILogEventEnricher
         httpContext.Items.Add(Constants.CorrelationIdValueKey, correlationId);
     }
 
-    private void AddCorrelationIdToResponse(HttpContext httpContext, in string correlationId)
+    private void AddCorrelationIdToResponse(HttpContext httpContext, string correlationId)
     {
         if (_addCorrelationIdToResponse
             && !httpContext.Response.Headers.ContainsKey(_headerKey))
@@ -96,33 +96,24 @@ public class CorrelationIdEnricher : ILogEventEnricher
     private string PrepareCorrelationId(HttpContext httpContext)
     {
         StringValues requestHeader = httpContext.Request.Headers[_headerKey];
-        string returnValue;
 
         if (!string.IsNullOrWhiteSpace(requestHeader))
         {
-            returnValue = requestHeader;
+            return requestHeader;
         }
-        else
+
+        StringValues responseHeader = httpContext.Response.Headers[_headerKey];
+
+        if (!string.IsNullOrWhiteSpace(responseHeader))
         {
-            StringValues responseHeader = httpContext.Response.Headers[_headerKey];
-
-            if (!string.IsNullOrWhiteSpace(responseHeader))
-            {
-                returnValue = responseHeader;
-            }
-            else
-            {
-                if (_addValueIfHeaderAbsence)
-                {
-                    returnValue = Guid.NewGuid().ToString();
-                }
-                else
-                {
-                    returnValue = null;
-                }
-            }
+            return responseHeader;
         }
 
-        return returnValue;
+        if (_addValueIfHeaderAbsence)
+        {
+            return Guid.NewGuid().ToString();
+        }
+
+        return null;
     }
 }
