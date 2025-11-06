@@ -30,6 +30,50 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact]
+    public void EnrichLogWithCorrelationId_WhenRequestServicesContainsICorrelationIdPreparer_ShouldUseCorrelationIdPreparerFromRequestServices()
+    {
+        // Arrange
+        string correlationId = Guid.NewGuid().ToString();
+
+        ICorrelationIdPreparer correlationIdPreparer = Substitute.For<ICorrelationIdPreparer>();
+        IServiceProvider serviceProvider = Substitute.For<IServiceProvider>();
+
+        DefaultHttpContext httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+        CorrelationIdPreparerOptions correlationIdPreparerOptions = new CorrelationIdPreparerOptions(false, HeaderKey);
+
+        correlationIdPreparer.PrepareCorrelationId(
+            httpContext,
+            Arg.Is<CorrelationIdPreparerOptions>(x =>
+                x.AddValueIfHeaderAbsence == correlationIdPreparerOptions.AddValueIfHeaderAbsence &&
+                x.HeaderKey == correlationIdPreparerOptions.HeaderKey))
+            .Returns(correlationId);
+
+        serviceProvider.GetService<ICorrelationIdPreparer>().Returns(correlationIdPreparer);
+        IHttpContextAccessor contextAccessor = Substitute.For<IHttpContextAccessor>();
+        contextAccessor.HttpContext.Returns(httpContext);
+
+        CorrelationIdEnricher correlationIdEnricher = new(correlationIdPreparerOptions.HeaderKey, correlationIdPreparerOptions.AddValueIfHeaderAbsence, true, contextAccessor);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(correlationIdEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Has a correlation id.");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.True(evt.Properties.ContainsKey(LogPropertyName));
+        Assert.Equal(correlationId, evt.Properties[LogPropertyName].LiteralValue().ToString());
+        Assert.Equal(correlationId, contextAccessor.HttpContext!.Response.Headers[HeaderKey]);
+    }
+
+    [Fact]
     public void EnrichLogWithCorrelationId_WhenHttpRequestContainCorrelationHeader_ShouldCreateCorrelationIdProperty()
     {
         // Arrange
