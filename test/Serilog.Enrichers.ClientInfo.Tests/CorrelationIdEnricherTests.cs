@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using NSubstitute.ReturnsExtensions;
 using Serilog.Core;
 using Serilog.Events;
-using System;
+using Serilog.Preparers.CorrelationIds;
 using Xunit;
 
 namespace Serilog.Enrichers.ClientInfo.Tests;
@@ -15,7 +18,13 @@ public class CorrelationIdEnricherTests
 
     public CorrelationIdEnricherTests()
     {
-        DefaultHttpContext httpContext = new();
+        IServiceProvider serviceProvider = Substitute.For<IServiceProvider>();
+        serviceProvider.GetService<ICorrelationIdPreparer>().ReturnsNull();
+
+        DefaultHttpContext httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
         _contextAccessor = Substitute.For<IHttpContextAccessor>();
         _contextAccessor.HttpContext.Returns(httpContext);
     }

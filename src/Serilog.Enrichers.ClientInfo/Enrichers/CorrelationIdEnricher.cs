@@ -1,9 +1,9 @@
-﻿using System;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
+﻿using Microsoft.AspNetCore.Http;
 using Serilog.Core;
 using Serilog.Events;
+using Serilog.Preparers.CorrelationIds;
 
+#nullable enable
 namespace Serilog.Enrichers;
 
 /// <inheritdoc />
@@ -12,9 +12,8 @@ public class CorrelationIdEnricher : ILogEventEnricher
     private const string CorrelationIdItemKey = "Serilog_CorrelationId";
     private const string PropertyName = "CorrelationId";
     private readonly bool _addCorrelationIdToResponse;
-    private readonly bool _addValueIfHeaderAbsence;
     private readonly IHttpContextAccessor _contextAccessor;
-    private readonly string _headerKey;
+    private readonly CorrelationIdPreparerOptions _options;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CorrelationIdEnricher" /> class.
@@ -46,8 +45,7 @@ public class CorrelationIdEnricher : ILogEventEnricher
         bool addCorrelationIdToResponse,
         IHttpContextAccessor contextAccessor)
     {
-        _headerKey = headerKey;
-        _addValueIfHeaderAbsence = addValueIfHeaderAbsence;
+        _options = new CorrelationIdPreparerOptions(addValueIfHeaderAbsence, headerKey);
         _addCorrelationIdToResponse = addCorrelationIdToResponse;
         _contextAccessor = contextAccessor;
     }
@@ -58,7 +56,7 @@ public class CorrelationIdEnricher : ILogEventEnricher
         HttpContext httpContext = _contextAccessor.HttpContext;
         if (httpContext == null) return;
 
-        if (httpContext.Items.TryGetValue(CorrelationIdItemKey, out object value) &&
+        if (httpContext.Items.TryGetValue(CorrelationIdItemKey, out object? value) &&
             value is LogEventProperty logEventProperty)
         {
             logEvent.AddPropertyIfAbsent(logEventProperty);
@@ -66,14 +64,16 @@ public class CorrelationIdEnricher : ILogEventEnricher
             // Ensure the string value is also available if not already stored
             if (!httpContext.Items.ContainsKey(Constants.CorrelationIdValueKey))
             {
-                string correlationIdValue = ((ScalarValue)logEventProperty.Value).Value as string;
+                string? correlationIdValue = ((ScalarValue)logEventProperty.Value).Value as string;
                 httpContext.Items.Add(Constants.CorrelationIdValueKey, correlationIdValue);
             }
 
             return;
         }
 
-        string correlationId = PrepareCorrelationId(httpContext);
+        ICorrelationIdPreparer correlationIdPreparer = httpContext.GetCorrelationIdPreparer();
+
+        string? correlationId = correlationIdPreparer.PrepareCorrelationId(httpContext, _options);
 
         AddCorrelationIdToResponse(httpContext, correlationId);
 
@@ -84,36 +84,14 @@ public class CorrelationIdEnricher : ILogEventEnricher
         httpContext.Items.Add(Constants.CorrelationIdValueKey, correlationId);
     }
 
-    private void AddCorrelationIdToResponse(HttpContext httpContext, string correlationId)
+    private void AddCorrelationIdToResponse(HttpContext httpContext, string? correlationId)
     {
         if (_addCorrelationIdToResponse
-            && !httpContext.Response.Headers.ContainsKey(_headerKey))
+            && !string.IsNullOrEmpty(correlationId)
+            && !httpContext.Response.Headers.ContainsKey(_options.HeaderKey))
         {
-            httpContext.Response.Headers[_headerKey] = correlationId;
+            httpContext.Response.Headers[_options.HeaderKey] = correlationId;
         }
-    }
-
-    private string PrepareCorrelationId(HttpContext httpContext)
-    {
-        StringValues requestHeader = httpContext.Request.Headers[_headerKey];
-
-        if (!string.IsNullOrWhiteSpace(requestHeader))
-        {
-            return requestHeader;
-        }
-
-        StringValues responseHeader = httpContext.Response.Headers[_headerKey];
-
-        if (!string.IsNullOrWhiteSpace(responseHeader))
-        {
-            return responseHeader;
-        }
-
-        if (_addValueIfHeaderAbsence)
-        {
-            return Guid.NewGuid().ToString();
-        }
-
-        return null;
     }
 }
+#nullable disable
