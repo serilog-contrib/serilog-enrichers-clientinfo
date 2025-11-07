@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
@@ -7,19 +8,19 @@ namespace Serilog.Preparers.CorrelationIds
 {
     internal class CorrelationIdPreparer : ICorrelationIdPreparer
     {
-        protected string? CorrelationId { get; set; }
+        protected AsyncLocal<string?> CorrelationId { get; } = new AsyncLocal<string?>();
 
         /// <inheritdoc/>
         public string? PrepareCorrelationId(
             HttpContext httpContext,
             CorrelationIdPreparerOptions correlationIdPreparerOptions)
         {
-            if (string.IsNullOrEmpty(CorrelationId))
+            if (string.IsNullOrEmpty(CorrelationId.Value))
             {
-                CorrelationId = PrepareValueForCorrelationId(httpContext, correlationIdPreparerOptions);
+                CorrelationId.Value = PrepareValueForCorrelationId(httpContext, correlationIdPreparerOptions);
             }
 
-            return CorrelationId;
+            return CorrelationId.Value;
         }
 
         protected string? PrepareValueForCorrelationId(
