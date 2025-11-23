@@ -1,6 +1,6 @@
 # serilog-enrichers-clientinfo [![NuGet](http://img.shields.io/nuget/v/Serilog.Enrichers.ClientInfo.svg?style=flat)](https://www.nuget.org/packages/Serilog.Enrichers.ClientInfo/) [![](https://img.shields.io/nuget/dt/Serilog.Enrichers.ClientInfo.svg?label=nuget%20downloads)](Serilog.Enrichers.ClientInfo)
 
-Enrich logs with client IP, Correlation Id and HTTP request headers.
+Enrich logs with client IP, Correlation Id, HTTP request headers, and user claims.
 
 Install the _Serilog.Enrichers.ClientInfo_ [NuGet package](https://www.nuget.org/packages/Serilog.Enrichers.ClientInfo/)
 
@@ -19,6 +19,7 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.WithClientIp()
     .Enrich.WithCorrelationId()
     .Enrich.WithRequestHeader("Header-Name1")
+    .Enrich.WithUserClaims(ClaimTypes.NameIdentifier, ClaimTypes.Email)
     // ...other configuration...
     .CreateLogger();
 ```
@@ -35,6 +36,10 @@ or in `appsettings.json` file:
       {
           "Name": "WithRequestHeader",
           "Args": { "headerName": "User-Agent"}
+      },
+      {
+          "Name": "WithUserClaims",
+          "Args": { "claimNames": ["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] }
       }
     ],
     "WriteTo": [
@@ -176,6 +181,65 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .Enrich.WithRequestHeader("User-Agent")
     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] {Level:u3} {UserAgent} {Message:lj}{NewLine}{Exception}")
+```
+
+### UserClaims
+The `UserClaims` enricher allows you to log specific user claim values from authenticated users. This is useful for tracking user-specific information in your logs.
+
+#### Basic Usage
+```csharp
+using System.Security.Claims;
+
+Log.Logger = new LoggerConfiguration()
+    .Enrich.WithUserClaims(ClaimTypes.NameIdentifier, ClaimTypes.Email)
+    ...
+```
+
+or in `appsettings.json` file:
+```json
+{
+  "Serilog": {
+    "MinimumLevel": "Debug",
+    "Using":  [ "Serilog.Enrichers.ClientInfo" ],
+    "Enrich": [
+      {
+        "Name": "WithUserClaims",
+        "Args": {
+          "claimNames": [
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+#### Features
+- **Configurable Claims**: Specify which claims to log by providing claim names as parameters.
+- **Null-Safe**: If a claim doesn't exist, it will be logged as `null` instead of throwing an error.
+- **Authentication-Aware**: Only logs claims when the user is authenticated. If the user is not authenticated, no claim properties are added to the log.
+- **Performance-Optimized**: Claim values are cached per request for better performance.
+
+#### Example with Multiple Claims
+```csharp
+Log.Logger = new LoggerConfiguration()
+    .Enrich.WithUserClaims(
+        ClaimTypes.NameIdentifier,
+        ClaimTypes.Email,
+        ClaimTypes.Name,
+        ClaimTypes.Role)
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] User: {http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier} {Message:lj}{NewLine}{Exception}")
+    ...
+```
+
+#### Custom Claims
+You can also log custom claim types:
+```csharp
+Log.Logger = new LoggerConfiguration()
+    .Enrich.WithUserClaims("tenant_id", "organization_id")
+    ...
 ```
 
 ## Installing into an ASP.NET Core Web Application

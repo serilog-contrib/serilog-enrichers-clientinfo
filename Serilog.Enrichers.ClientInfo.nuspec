@@ -16,7 +16,7 @@
 		<tags>serilog enrichers enricher ip correlation-id request header</tags>
 		<copyright>© 2025 Serilog Contributors</copyright>
 		<releaseNotes>
-			- Remove dependency on Microsoft.AspNetCore.App framework.
+			- Add user claims enrichment support.
 		</releaseNotes>
 		<dependencies>
 			<group targetFramework=".NET8.0">

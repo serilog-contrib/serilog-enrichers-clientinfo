@@ -85,4 +85,21 @@ public static class ClientInfoLoggerConfigurationExtensions
 
         return enrichmentConfiguration.With(new ClientHeaderEnricher(headerName, propertyName));
     }
+
+    /// <summary>
+    ///     Registers the user claims enricher to enrich logs with specified user claim values.
+    /// </summary>
+    /// <param name="enrichmentConfiguration">The enrichment configuration.</param>
+    /// <param name="claimNames">The names of the claims to log.</param>
+    /// <exception cref="ArgumentNullException">enrichmentConfiguration</exception>
+    /// <exception cref="ArgumentNullException">claimNames</exception>
+    /// <returns>The logger configuration so that multiple calls can be chained.</returns>
+    public static LoggerConfiguration WithUserClaims(this LoggerEnrichmentConfiguration enrichmentConfiguration,
+        params string[] claimNames)
+    {
+        ArgumentNullException.ThrowIfNull(enrichmentConfiguration, nameof(enrichmentConfiguration));
+        ArgumentNullException.ThrowIfNull(claimNames, nameof(claimNames));
+
+        return enrichmentConfiguration.With(new UserClaimsEnricher(claimNames));
+    }
 }
