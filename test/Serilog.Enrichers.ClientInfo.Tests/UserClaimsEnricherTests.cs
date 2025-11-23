@@ -26,13 +26,12 @@ public class UserClaimsEnricherTests
         string userId = "user123";
         string userEmail = "user@example.com";
 
-        ClaimsIdentity identity = new(new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId),
-            new Claim(ClaimTypes.Email, userEmail)
-        }, "TestAuth");
+        ClaimsIdentity identity = new([
+            new(ClaimTypes.NameIdentifier, userId),
+            new(ClaimTypes.Email, userEmail)
+        ], "TestAuth");
 
-        _contextAccessor.HttpContext!.User = new ClaimsPrincipal(identity);
+        _contextAccessor.HttpContext!.User = new(identity);
 
         UserClaimsEnricher userClaimsEnricher = new(_contextAccessor, ClaimTypes.NameIdentifier, ClaimTypes.Email);
 
@@ -59,12 +58,11 @@ public class UserClaimsEnricherTests
         // Arrange
         string userId = "user123";
 
-        ClaimsIdentity identity = new(new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId)
-        }, "TestAuth");
+        ClaimsIdentity identity = new([
+            new(ClaimTypes.NameIdentifier, userId)
+        ], "TestAuth");
 
-        _contextAccessor.HttpContext!.User = new ClaimsPrincipal(identity);
+        _contextAccessor.HttpContext!.User = new(identity);
 
         UserClaimsEnricher userClaimsEnricher = new(_contextAccessor, ClaimTypes.NameIdentifier, ClaimTypes.Email);
 
@@ -90,7 +88,7 @@ public class UserClaimsEnricherTests
     {
         // Arrange
         ClaimsIdentity identity = new(); // Not authenticated
-        _contextAccessor.HttpContext!.User = new ClaimsPrincipal(identity);
+        _contextAccessor.HttpContext!.User = new(identity);
 
         UserClaimsEnricher userClaimsEnricher = new(_contextAccessor, ClaimTypes.NameIdentifier);
 
@@ -159,12 +157,11 @@ public class UserClaimsEnricherTests
         // Arrange
         string userId = "user123";
 
-        ClaimsIdentity identity = new(new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId)
-        }, "TestAuth");
+        ClaimsIdentity identity = new([
+            new(ClaimTypes.NameIdentifier, userId)
+        ], "TestAuth");
 
-        _contextAccessor.HttpContext!.User = new ClaimsPrincipal(identity);
+        _contextAccessor.HttpContext!.User = new(identity);
 
         UserClaimsEnricher userClaimsEnricher = new(_contextAccessor, ClaimTypes.NameIdentifier);
 
@@ -172,7 +169,11 @@ public class UserClaimsEnricherTests
         LogEvent evt2 = null;
         Logger log = new LoggerConfiguration()
             .Enrich.With(userClaimsEnricher)
-            .WriteTo.Sink(new DelegatingSink(e => { evt1 ??= e; evt2 = e; }))
+            .WriteTo.Sink(new DelegatingSink(e =>
+            {
+                evt1 ??= e;
+                evt2 = e;
+            }))
             .CreateLogger();
 
         // Act
@@ -197,15 +198,14 @@ public class UserClaimsEnricherTests
         string userName = "John Doe";
         string userRole = "Admin";
 
-        ClaimsIdentity identity = new(new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId),
-            new Claim(ClaimTypes.Email, userEmail),
-            new Claim(ClaimTypes.Name, userName),
-            new Claim(ClaimTypes.Role, userRole)
-        }, "TestAuth");
+        ClaimsIdentity identity = new([
+            new(ClaimTypes.NameIdentifier, userId),
+            new(ClaimTypes.Email, userEmail),
+            new(ClaimTypes.Name, userName),
+            new(ClaimTypes.Role, userRole)
+        ], "TestAuth");
 
-        _contextAccessor.HttpContext!.User = new ClaimsPrincipal(identity);
+        _contextAccessor.HttpContext!.User = new(identity);
 
         UserClaimsEnricher userClaimsEnricher = new(_contextAccessor,
             ClaimTypes.NameIdentifier,
@@ -238,12 +238,11 @@ public class UserClaimsEnricherTests
     public void EnrichLogWithUserClaims_WithEmptyClaimArray_ShouldNotAddProperties()
     {
         // Arrange
-        ClaimsIdentity identity = new(new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, "user123")
-        }, "TestAuth");
+        ClaimsIdentity identity = new([
+            new(ClaimTypes.NameIdentifier, "user123")
+        ], "TestAuth");
 
-        _contextAccessor.HttpContext!.User = new ClaimsPrincipal(identity);
+        _contextAccessor.HttpContext!.User = new(identity);
 
         UserClaimsEnricher userClaimsEnricher = new(_contextAccessor);
 
@@ -284,12 +283,11 @@ public class UserClaimsEnricherTests
         string customClaimType = "custom_claim_type";
         string customClaimValue = "custom_value";
 
-        ClaimsIdentity identity = new(new[]
-        {
-            new Claim(customClaimType, customClaimValue)
-        }, "TestAuth");
+        ClaimsIdentity identity = new([
+            new(customClaimType, customClaimValue)
+        ], "TestAuth");
 
-        _contextAccessor.HttpContext!.User = new ClaimsPrincipal(identity);
+        _contextAccessor.HttpContext!.User = new(identity);
 
         UserClaimsEnricher userClaimsEnricher = new(_contextAccessor, customClaimType);
 

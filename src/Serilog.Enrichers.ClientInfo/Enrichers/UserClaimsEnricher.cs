@@ -9,9 +9,9 @@ namespace Serilog.Enrichers;
 /// <inheritdoc />
 public class UserClaimsEnricher : ILogEventEnricher
 {
-    private readonly IHttpContextAccessor _contextAccessor;
-    private readonly string[] _claimNames;
     private readonly Dictionary<string, string> _claimItemKeys;
+    private readonly string[] _claimNames;
+    private readonly IHttpContextAccessor _contextAccessor;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="UserClaimsEnricher" /> class.
@@ -26,7 +26,7 @@ public class UserClaimsEnricher : ILogEventEnricher
     {
         _contextAccessor = contextAccessor;
         _claimNames = claimNames ?? [];
-        _claimItemKeys = new Dictionary<string, string>();
+        _claimItemKeys = new();
 
         // Pre-compute item keys for each claim
         foreach (string claimName in _claimNames)
@@ -39,10 +39,16 @@ public class UserClaimsEnricher : ILogEventEnricher
     public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {
         HttpContext httpContext = _contextAccessor.HttpContext;
-        if (httpContext == null) return;
+        if (httpContext == null)
+        {
+            return;
+        }
 
         ClaimsPrincipal user = httpContext.User;
-        if (user == null || !user.Identity?.IsAuthenticated == true) return;
+        if (user == null || !user.Identity?.IsAuthenticated == true)
+        {
+            return;
+        }
 
         foreach (string claimName in _claimNames)
         {
