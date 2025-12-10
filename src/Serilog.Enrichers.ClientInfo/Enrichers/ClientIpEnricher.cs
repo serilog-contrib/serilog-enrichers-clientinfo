@@ -14,6 +14,7 @@ public class ClientIpEnricher : ILogEventEnricher
 
     private readonly IHttpContextAccessor _contextAccessor;
     private readonly IpVersionPreference _ipVersionPreference;
+    private readonly string _ipAddressPropertyName;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ClientIpEnricher" /> class.
@@ -31,11 +32,23 @@ public class ClientIpEnricher : ILogEventEnricher
     {
     }
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ClientIpEnricher" /> class.
+    /// </summary>
+    /// <param name="ipVersionPreference">The IP version preference for filtering IP addresses.</param>
+    /// <param name="ipAddressPropertyName">The custom property name for the IP address log property.</param>
+    public ClientIpEnricher(IpVersionPreference ipVersionPreference, string ipAddressPropertyName) : this(
+        new HttpContextAccessor(), ipVersionPreference, ipAddressPropertyName)
+    {
+    }
+
     internal ClientIpEnricher(IHttpContextAccessor contextAccessor,
-        IpVersionPreference ipVersionPreference = IpVersionPreference.None)
+        IpVersionPreference ipVersionPreference = IpVersionPreference.None,
+        string ipAddressPropertyName = IpAddressPropertyName)
     {
         _contextAccessor = contextAccessor;
         _ipVersionPreference = ipVersionPreference;
+        _ipAddressPropertyName = ipAddressPropertyName;
     }
 
     /// <inheritdoc />
@@ -57,13 +70,13 @@ public class ClientIpEnricher : ILogEventEnricher
             value is LogEventProperty logEventProperty)
         {
             if (!((ScalarValue)logEventProperty.Value).Value!.ToString()!.Equals(ipAddress))
-                logEventProperty = new LogEventProperty(IpAddressPropertyName, new ScalarValue(ipAddress));
+                logEventProperty = new LogEventProperty(_ipAddressPropertyName, new ScalarValue(ipAddress));
 
             logEvent.AddPropertyIfAbsent(logEventProperty);
             return;
         }
 
-        LogEventProperty ipAddressProperty = new(IpAddressPropertyName, new ScalarValue(ipAddress));
+        LogEventProperty ipAddressProperty = new(_ipAddressPropertyName, new ScalarValue(ipAddress));
         httpContext.Items.Add(IpAddressItemKey, ipAddressProperty);
         logEvent.AddPropertyIfAbsent(ipAddressProperty);
     }

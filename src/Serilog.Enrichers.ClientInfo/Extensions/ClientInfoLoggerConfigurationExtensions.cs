@@ -44,6 +44,42 @@ public static class ClientInfoLoggerConfigurationExtensions
     }
 
     /// <summary>
+    ///     Registers the client IP enricher to enrich logs with
+    ///     <see cref="Microsoft.AspNetCore.Http.ConnectionInfo.RemoteIpAddress" /> value.
+    /// </summary>
+    /// <param name="enrichmentConfiguration">The enrichment configuration.</param>
+    /// <param name="ipAddressPropertyName">The custom property name for the IP address log property.</param>
+    /// <exception cref="ArgumentNullException">enrichmentConfiguration</exception>
+    /// <returns>The logger configuration so that multiple calls can be chained.</returns>
+    public static LoggerConfiguration WithClientIp(
+        this LoggerEnrichmentConfiguration enrichmentConfiguration,
+        string ipAddressPropertyName)
+    {
+        ArgumentNullException.ThrowIfNull(enrichmentConfiguration, nameof(enrichmentConfiguration));
+
+        return enrichmentConfiguration.With(new ClientIpEnricher(IpVersionPreference.None, ipAddressPropertyName));
+    }
+
+    /// <summary>
+    ///     Registers the client IP enricher to enrich logs with
+    ///     <see cref="Microsoft.AspNetCore.Http.ConnectionInfo.RemoteIpAddress" /> value.
+    /// </summary>
+    /// <param name="enrichmentConfiguration">The enrichment configuration.</param>
+    /// <param name="ipVersionPreference">The IP version preference for filtering IP addresses.</param>
+    /// <param name="ipAddressPropertyName">The custom property name for the IP address log property.</param>
+    /// <exception cref="ArgumentNullException">enrichmentConfiguration</exception>
+    /// <returns>The logger configuration so that multiple calls can be chained.</returns>
+    public static LoggerConfiguration WithClientIp(
+        this LoggerEnrichmentConfiguration enrichmentConfiguration,
+        IpVersionPreference ipVersionPreference,
+        string ipAddressPropertyName)
+    {
+        ArgumentNullException.ThrowIfNull(enrichmentConfiguration, nameof(enrichmentConfiguration));
+
+        return enrichmentConfiguration.With(new ClientIpEnricher(ipVersionPreference, ipAddressPropertyName));
+    }
+
+    /// <summary>
     ///     Registers the correlation id enricher to enrich logs with correlation id with
     ///     'x-correlation-id' header information.
     /// </summary>
