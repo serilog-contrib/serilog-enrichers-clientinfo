@@ -16,7 +16,7 @@
 		<tags>serilog enrichers enricher ip correlation-id request header</tags>
 		<copyright>© 2025 Serilog Contributors</copyright>
 		<releaseNotes>
-			- Add user claims enrichment support.
+			- Allow customizing ClientIP property name for OpenTelemetry conventions.
 		</releaseNotes>
 		<dependencies>
 			<group targetFramework=".NET8.0">
