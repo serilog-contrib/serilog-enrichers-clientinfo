@@ -330,3 +330,5 @@ ASALocalRun/
 .mfractor/
 
 .vshistory/
+
+nuget.exe
