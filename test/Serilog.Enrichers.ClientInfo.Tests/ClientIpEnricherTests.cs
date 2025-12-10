@@ -222,4 +222,32 @@ public class ClientIpEnricherTests
         Assert.True(evt.Properties.ContainsKey(customPropertyName));
         Assert.Equal(IPAddress.Loopback.ToString(), evt.Properties[customPropertyName].LiteralValue());
     }
+
+    [Fact]
+    public void ClientIpEnricher_WithNullPropertyName_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new ClientIpEnricher(IpVersionPreference.None, null));
+    }
+
+    [Fact]
+    public void WithClientIp_WithNullPropertyName_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        LoggerConfiguration loggerConfiguration = new LoggerConfiguration();
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => loggerConfiguration.Enrich.WithClientIp((string)null));
+    }
+
+    [Fact]
+    public void WithClientIp_WithIpVersionPreferenceAndNullPropertyName_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        LoggerConfiguration loggerConfiguration = new LoggerConfiguration();
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => 
+            loggerConfiguration.Enrich.WithClientIp(IpVersionPreference.Ipv4Only, null));
+    }
 }

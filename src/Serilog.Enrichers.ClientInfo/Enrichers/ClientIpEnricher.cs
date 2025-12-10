@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Http;
 using Serilog.Core;
@@ -37,9 +38,12 @@ public class ClientIpEnricher : ILogEventEnricher
     /// </summary>
     /// <param name="ipVersionPreference">The IP version preference for filtering IP addresses.</param>
     /// <param name="ipAddressPropertyName">The custom property name for the IP address log property.</param>
-    public ClientIpEnricher(IpVersionPreference ipVersionPreference, string ipAddressPropertyName) : this(
-        new HttpContextAccessor(), ipVersionPreference, ipAddressPropertyName)
+    public ClientIpEnricher(IpVersionPreference ipVersionPreference, string ipAddressPropertyName)
     {
+        ArgumentNullException.ThrowIfNull(ipAddressPropertyName, nameof(ipAddressPropertyName));
+        _contextAccessor = new HttpContextAccessor();
+        _ipVersionPreference = ipVersionPreference;
+        _ipAddressPropertyName = ipAddressPropertyName;
     }
 
     internal ClientIpEnricher(IHttpContextAccessor contextAccessor,

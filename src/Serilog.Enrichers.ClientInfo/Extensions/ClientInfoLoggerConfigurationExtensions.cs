@@ -50,12 +50,14 @@ public static class ClientInfoLoggerConfigurationExtensions
     /// <param name="enrichmentConfiguration">The enrichment configuration.</param>
     /// <param name="ipAddressPropertyName">The custom property name for the IP address log property.</param>
     /// <exception cref="ArgumentNullException">enrichmentConfiguration</exception>
+    /// <exception cref="ArgumentNullException">ipAddressPropertyName</exception>
     /// <returns>The logger configuration so that multiple calls can be chained.</returns>
     public static LoggerConfiguration WithClientIp(
         this LoggerEnrichmentConfiguration enrichmentConfiguration,
         string ipAddressPropertyName)
     {
         ArgumentNullException.ThrowIfNull(enrichmentConfiguration, nameof(enrichmentConfiguration));
+        ArgumentNullException.ThrowIfNull(ipAddressPropertyName, nameof(ipAddressPropertyName));
 
         return enrichmentConfiguration.With(new ClientIpEnricher(IpVersionPreference.None, ipAddressPropertyName));
     }
@@ -68,6 +70,7 @@ public static class ClientInfoLoggerConfigurationExtensions
     /// <param name="ipVersionPreference">The IP version preference for filtering IP addresses.</param>
     /// <param name="ipAddressPropertyName">The custom property name for the IP address log property.</param>
     /// <exception cref="ArgumentNullException">enrichmentConfiguration</exception>
+    /// <exception cref="ArgumentNullException">ipAddressPropertyName</exception>
     /// <returns>The logger configuration so that multiple calls can be chained.</returns>
     public static LoggerConfiguration WithClientIp(
         this LoggerEnrichmentConfiguration enrichmentConfiguration,
@@ -75,6 +78,7 @@ public static class ClientInfoLoggerConfigurationExtensions
         string ipAddressPropertyName)
     {
         ArgumentNullException.ThrowIfNull(enrichmentConfiguration, nameof(enrichmentConfiguration));
+        ArgumentNullException.ThrowIfNull(ipAddressPropertyName, nameof(ipAddressPropertyName));
 
         return enrichmentConfiguration.With(new ClientIpEnricher(ipVersionPreference, ipAddressPropertyName));
     }
