@@ -90,6 +90,42 @@ Available IP version preferences:
 - `PreferIpv6`: Prefer IPv6 addresses when multiple are available, fallback to IPv4  
 - `Ipv4Only`: Only log IPv4 addresses, ignore IPv6 addresses
 - `Ipv6Only`: Only log IPv6 addresses, ignore IPv4 addresses
+
+#### Custom Property Name
+You can customize the property name for the logged IP address (default is `ClientIp`). This is useful for following conventions like [OpenTelemetry semantic conventions](https://opentelemetry.io/docs/specs/semconv/registry/attributes/client/) which recommend `client.address`:
+
+```csharp
+Log.Logger = new LoggerConfiguration()
+    .Enrich.WithClientIp("client.address")
+    ...
+```
+
+You can also combine custom property names with IP version preferences:
+
+```csharp
+Log.Logger = new LoggerConfiguration()
+    .Enrich.WithClientIp(IpVersionPreference.Ipv4Only, "client.address")
+    ...
+```
+
+or in `appsettings.json` file:
+```json
+{
+  "Serilog": {
+    "MinimumLevel": "Debug",
+    "Using":  [ "Serilog.Enrichers.ClientInfo" ],
+    "Enrich": [
+      {
+        "Name": "WithClientIp",
+        "Args": {
+          "ipVersionPreference": "Ipv4Only",
+          "ipAddressPropertyName": "client.address"
+        }
+      }
+    ]
+  }
+}
+```
   
 ### CorrelationId
 For `CorrelationId` enricher you can:
