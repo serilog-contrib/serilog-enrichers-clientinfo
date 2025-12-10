@@ -28,8 +28,7 @@ public class ClientIpEnricher : ILogEventEnricher
     ///     Initializes a new instance of the <see cref="ClientIpEnricher" /> class.
     /// </summary>
     /// <param name="ipVersionPreference">The IP version preference for filtering IP addresses.</param>
-    public ClientIpEnricher(IpVersionPreference ipVersionPreference) : this(new HttpContextAccessor(),
-        ipVersionPreference)
+    public ClientIpEnricher(IpVersionPreference ipVersionPreference) : this(new HttpContextAccessor(), ipVersionPreference)
     {
     }
 
@@ -46,7 +45,8 @@ public class ClientIpEnricher : ILogEventEnricher
         _ipAddressPropertyName = ipAddressPropertyName;
     }
 
-    internal ClientIpEnricher(IHttpContextAccessor contextAccessor,
+    internal ClientIpEnricher(
+        IHttpContextAccessor contextAccessor,
         IpVersionPreference ipVersionPreference = IpVersionPreference.None,
         string ipAddressPropertyName = IpAddressPropertyName)
     {
