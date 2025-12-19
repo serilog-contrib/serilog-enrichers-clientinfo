@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using NSubstitute.ReturnsExtensions;
 using Serilog.Core;
 using Serilog.Events;
-using System;
+using Serilog.Preparers.CorrelationIds;
 using Xunit;
 
 namespace Serilog.Enrichers.ClientInfo.Tests;
@@ -15,18 +18,44 @@ public class CorrelationIdEnricherTests
 
     public CorrelationIdEnricherTests()
     {
-        DefaultHttpContext httpContext = new();
+        IServiceProvider serviceProvider = Substitute.For<IServiceProvider>();
+        serviceProvider.GetService<ICorrelationIdPreparer>().ReturnsNull();
+
+        DefaultHttpContext httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
         _contextAccessor = Substitute.For<IHttpContextAccessor>();
         _contextAccessor.HttpContext.Returns(httpContext);
     }
 
     [Fact]
-    public void EnrichLogWithCorrelationId_WhenHttpRequestContainCorrelationHeader_ShouldCreateCorrelationIdProperty()
+    public void EnrichLogWithCorrelationId_WhenRequestServicesContainsICorrelationIdPreparer_ShouldUseCorrelationIdPreparerFromRequestServices()
     {
         // Arrange
         string correlationId = Guid.NewGuid().ToString();
-        _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = correlationId;
-        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
+
+        ICorrelationIdPreparer correlationIdPreparer = Substitute.For<ICorrelationIdPreparer>();
+        IServiceProvider serviceProvider = Substitute.For<IServiceProvider>();
+
+        DefaultHttpContext httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+        CorrelationIdPreparerOptions correlationIdPreparerOptions = new CorrelationIdPreparerOptions(false, HeaderKey);
+
+        correlationIdPreparer.PrepareCorrelationId(
+            httpContext,
+            Arg.Is<CorrelationIdPreparerOptions>(x =>
+                x.AddValueIfHeaderAbsence == correlationIdPreparerOptions.AddValueIfHeaderAbsence &&
+                x.HeaderKey == correlationIdPreparerOptions.HeaderKey))
+            .Returns(correlationId);
+
+        serviceProvider.GetService<ICorrelationIdPreparer>().Returns(correlationIdPreparer);
+        IHttpContextAccessor contextAccessor = Substitute.For<IHttpContextAccessor>();
+        contextAccessor.HttpContext.Returns(httpContext);
+
+        CorrelationIdEnricher correlationIdEnricher = new(correlationIdPreparerOptions.HeaderKey, correlationIdPreparerOptions.AddValueIfHeaderAbsence, contextAccessor);
 
         LogEvent evt = null;
         Logger log = new LoggerConfiguration()
@@ -44,8 +73,7 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact]
-    public void
-        EnrichLogWithCorrelationId_WhenHttpRequestContainCorrelationHeader_ShouldCreateCorrelationIdPropertyHasValue()
+    public void EnrichLogWithCorrelationId_WhenHttpRequestContainCorrelationHeader_ShouldCreateCorrelationIdProperty()
     {
         // Arrange
         string correlationId = Guid.NewGuid().ToString();
