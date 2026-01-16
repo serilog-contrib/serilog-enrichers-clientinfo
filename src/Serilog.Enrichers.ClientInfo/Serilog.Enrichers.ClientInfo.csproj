@@ -1,18 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
 		<AssemblyName>Serilog.Enrichers.ClientInfo</AssemblyName>
     <RootNamespace>Serilog</RootNamespace>
 	  <LangVersion>latest</LangVersion>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	  <DebugType>embedded</DebugType>
 	  <EmbedAllSources>true</EmbedAllSources>
-	  <Version>2.8.0</Version>
-	  <AssemblyVersion>2.8.0</AssemblyVersion>
+	  <Version>2.9.0</Version>
+	  <AssemblyVersion>2.9.0</AssemblyVersion>
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
 		<PackageReference Include="Serilog" Version="4.3.0" />
 	</ItemGroup>
 
