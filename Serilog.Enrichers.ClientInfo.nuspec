@@ -16,15 +16,19 @@
 		<tags>serilog enrichers enricher ip correlation-id request header</tags>
 		<copyright>© 2025 Serilog Contributors</copyright>
 		<releaseNotes>
-			- Allow customizing ClientIP property name for OpenTelemetry conventions.
+			- Update dependencies and add .NET 10 support.
 		</releaseNotes>
 		<dependencies>
 			<group targetFramework=".NET8.0">
-				<dependency id="Microsoft.AspNetCore.Http" version="2.3.0" />
+				<dependency id="Microsoft.AspNetCore.Http" version="2.3.9" />
 				<dependency id="Serilog" version="4.3.0" />
 			</group>
 			<group targetFramework=".NET9.0">
-				<dependency id="Microsoft.AspNetCore.Http" version="2.3.0" />
+				<dependency id="Microsoft.AspNetCore.Http" version="2.3.9" />
+				<dependency id="Serilog" version="4.3.0" />
+			</group>
+			<group targetFramework=".NET10.0">
+				<dependency id="Microsoft.AspNetCore.Http" version="2.3.9" />
 				<dependency id="Serilog" version="4.3.0" />
 			</group>
 		</dependencies>
@@ -32,6 +36,7 @@
 	<files>
 		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net8.0\*" target="lib/net8.0" />
 		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net9.0\*" target="lib/net9.0" />
+		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net10.0\*" target="lib/net10.0" />
 		<file src="README.md" target="docs\" />
 		<file src="icon.png" target="assets\" />
 	</files>

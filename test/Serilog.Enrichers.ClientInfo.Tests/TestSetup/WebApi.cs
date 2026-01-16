@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Enrichers.ClientInfo.Tests;
 using Serilog.Events;
@@ -9,22 +8,21 @@ using Serilog.Events;
 Log.Logger = new LoggerConfiguration()
     .Enrich.WithClientIp()
     .Enrich.WithRequestHeader("X-Forwarded-For")
-    .WriteTo.Sink(new DelegatingSink(e => LogEvent = e, saveLogs: true))
+    .WriteTo.Sink(new DelegatingSink(e => LogEvent = e, true))
     .CreateLogger();
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
 builder.Services
     .AddHttpContextAccessor()
-    .Configure<ForwardedHeadersOptions>(
-        options =>
-        {
-            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor;
-            options.KnownNetworks.Clear();
-            options.KnownProxies.Clear();
-        });
+    .Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor;
+        options.KnownIPNetworks.Clear();
+        options.KnownProxies.Clear();
+    });
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 app.UseForwardedHeaders();
 
@@ -34,8 +32,9 @@ app.Run();
 
 public partial class Program
 {
-    private Program()
-    { }
-
     public static LogEvent LogEvent;
+
+    private Program()
+    {
+    }
 }
