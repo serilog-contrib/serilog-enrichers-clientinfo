@@ -20,15 +20,18 @@
 		</releaseNotes>
 		<dependencies>
 			<group targetFramework=".NET8.0">
-				<dependency id="Microsoft.AspNetCore.Http" version="2.3.9" />
+				<dependency id="Microsoft.AspNetCore.Http" version="2.3.14" />
+				<dependency id="Microsoft.AspNetCore.WebUtilities" version="2.3.14" />
 				<dependency id="Serilog" version="4.3.0" />
 			</group>
 			<group targetFramework=".NET9.0">
-				<dependency id="Microsoft.AspNetCore.Http" version="2.3.9" />
+				<dependency id="Microsoft.AspNetCore.Http" version="2.3.14" />
+				<dependency id="Microsoft.AspNetCore.WebUtilities" version="2.3.14" />
 				<dependency id="Serilog" version="4.3.0" />
 			</group>
 			<group targetFramework=".NET10.0">
-				<dependency id="Microsoft.AspNetCore.Http" version="2.3.9" />
+				<dependency id="Microsoft.AspNetCore.Http" version="2.3.14" />
+				<dependency id="Microsoft.AspNetCore.WebUtilities" version="2.3.14" />
 				<dependency id="Serilog" version="4.3.0" />
 			</group>
 		</dependencies>
