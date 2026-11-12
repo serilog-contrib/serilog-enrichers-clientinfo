@@ -21,9 +21,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{931596
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{A170BD74-8542-4880-BC6F-283D03C6AA6D}"
-	ProjectSection(SolutionItems) = preProject
-		Serilog.Enrichers.ClientInfo.nuspec = Serilog.Enrichers.ClientInfo.nuspec
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleWebApp", "sample\SampleWebApp\SampleWebApp.csproj", "{3C3C0104-969D-4FA3-B5DE-8A8A0A91E455}"
 EndProject
