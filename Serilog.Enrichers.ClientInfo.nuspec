@@ -14,22 +14,19 @@
 		<readme>docs\README.md</readme>
 		<icon>assets\icon.png</icon>
 		<tags>serilog enrichers enricher ip correlation-id request header</tags>
-		<copyright>© 2025 Serilog Contributors</copyright>
+		<copyright>© 2026 Serilog Contributors</copyright>
 		<releaseNotes>
-			- Update dependencies and add .NET 10 support.
+			- Add .NET 11 support.
+			- Remove .NET 8 and .NET 9 targets.
+			- Fix NU1902: reference Microsoft.AspNetCore.WebUtilities 2.3.14 (CVE-2026-118750).
 		</releaseNotes>
 		<dependencies>
-			<group targetFramework=".NET8.0">
-				<dependency id="Microsoft.AspNetCore.Http" version="2.3.14" />
-				<dependency id="Microsoft.AspNetCore.WebUtilities" version="2.3.14" />
-				<dependency id="Serilog" version="4.3.0" />
-			</group>
-			<group targetFramework=".NET9.0">
-				<dependency id="Microsoft.AspNetCore.Http" version="2.3.14" />
-				<dependency id="Microsoft.AspNetCore.WebUtilities" version="2.3.14" />
-				<dependency id="Serilog" version="4.3.0" />
-			</group>
 			<group targetFramework=".NET10.0">
+				<dependency id="Microsoft.AspNetCore.Http" version="2.3.14" />
+				<dependency id="Microsoft.AspNetCore.WebUtilities" version="2.3.14" />
+				<dependency id="Serilog" version="4.3.0" />
+			</group>
+			<group targetFramework=".NET11.0">
 				<dependency id="Microsoft.AspNetCore.Http" version="2.3.14" />
 				<dependency id="Microsoft.AspNetCore.WebUtilities" version="2.3.14" />
 				<dependency id="Serilog" version="4.3.0" />
@@ -37,9 +34,8 @@
 		</dependencies>
 	</metadata>
 	<files>
-		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net8.0\*" target="lib/net8.0" />
-		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net9.0\*" target="lib/net9.0" />
 		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net10.0\*" target="lib/net10.0" />
+		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net11.0\*" target="lib/net11.0" />
 		<file src="README.md" target="docs\" />
 		<file src="icon.png" target="assets\" />
 	</files>
