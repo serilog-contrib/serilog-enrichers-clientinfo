@@ -190,6 +190,56 @@ public class UserClaimsEnricherTests
     }
 
     [Fact]
+    public void EnrichLogWithUserClaims_WhenPrincipalIsReplacedDuringRequest_ShouldLogClaimsOfCurrentPrincipal()
+    {
+        // Arrange
+        _contextAccessor.HttpContext!.User = new(new ClaimsIdentity([
+            new(ClaimTypes.NameIdentifier, "alice")
+        ], "Cookie"));
+
+        UserClaimsEnricher userClaimsEnricher = new(_contextAccessor, ClaimTypes.NameIdentifier);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(userClaimsEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Logged as the first principal.");
+        _contextAccessor.HttpContext!.User = new(new ClaimsIdentity([
+            new(ClaimTypes.NameIdentifier, "bob")
+        ], "Bearer"));
+        log.Information("Logged as the second principal.");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.Equal("bob", evt.Properties[ClaimTypes.NameIdentifier].LiteralValue());
+    }
+
+    [Fact]
+    public void EnrichLogWithUserClaims_WhenPrincipalHasNoIdentity_ShouldNotAddProperties()
+    {
+        // Arrange
+        _contextAccessor.HttpContext!.User = new ClaimsPrincipal();
+
+        UserClaimsEnricher userClaimsEnricher = new(_contextAccessor, ClaimTypes.NameIdentifier);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(userClaimsEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Test log message.");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.False(evt.Properties.ContainsKey(ClaimTypes.NameIdentifier));
+    }
+
+    [Fact]
     public void EnrichLogWithUserClaims_WithMultipleClaims_ShouldLogAllSpecifiedClaims()
     {
         // Arrange

@@ -11,7 +11,6 @@ namespace Serilog.Enrichers;
 public class ClientIpEnricher : ILogEventEnricher
 {
     private const string IpAddressPropertyName = "ClientIp";
-    private const string IpAddressItemKey = "Serilog_ClientIp";
 
     private readonly IHttpContextAccessor _contextAccessor;
     private readonly IpVersionPreference _ipVersionPreference;
@@ -68,21 +67,11 @@ public class ClientIpEnricher : ILogEventEnricher
         IPAddress filteredIpAddress = ApplyIpVersionFilter(remoteIpAddress);
         if (filteredIpAddress == null) return; // IP address was filtered out based on preference
 
-        string ipAddress = filteredIpAddress.ToString();
-
-        if (httpContext.Items.TryGetValue(IpAddressItemKey, out object value) &&
-            value is LogEventProperty logEventProperty)
-        {
-            if (!((ScalarValue)logEventProperty.Value).Value!.ToString()!.Equals(ipAddress))
-                logEventProperty = new LogEventProperty(_ipAddressPropertyName, new ScalarValue(ipAddress));
-
-            logEvent.AddPropertyIfAbsent(logEventProperty);
-            return;
-        }
-
-        LogEventProperty ipAddressProperty = new(_ipAddressPropertyName, new ScalarValue(ipAddress));
-        httpContext.Items.Add(IpAddressItemKey, ipAddressProperty);
-        logEvent.AddPropertyIfAbsent(ipAddressProperty);
+        // The address is read on every event rather than cached in HttpContext.Items: it can change during
+        // the request (forwarded headers middleware) and writing to Items is not safe when several threads
+        // log within the same request.
+        logEvent.AddPropertyIfAbsent(
+            new LogEventProperty(_ipAddressPropertyName, new ScalarValue(filteredIpAddress.ToString())));
     }
 
     /// <summary>
@@ -99,9 +88,17 @@ public class ClientIpEnricher : ILogEventEnricher
                 .PreferIpv4 => ipAddress, // For single IP, just return it (preference only matters with multiple IPs)
             IpVersionPreference
                 .PreferIpv6 => ipAddress, // For single IP, just return it (preference only matters with multiple IPs)
-            IpVersionPreference.Ipv4Only => ipAddress.AddressFamily == AddressFamily.InterNetwork ? ipAddress : null,
+            IpVersionPreference.Ipv4Only => ToIpv4OrNull(ipAddress),
             IpVersionPreference.Ipv6Only => ipAddress.AddressFamily == AddressFamily.InterNetworkV6 ? ipAddress : null,
             _ => ipAddress
         };
+    }
+
+    private static IPAddress ToIpv4OrNull(IPAddress ipAddress)
+    {
+        if (ipAddress.AddressFamily == AddressFamily.InterNetwork) return ipAddress;
+
+        // An IPv4 client connecting to a dual-stack socket is reported as ::ffff:a.b.c.d.
+        return ipAddress.IsIPv4MappedToIPv6 ? ipAddress.MapToIPv4() : null;
     }
 }

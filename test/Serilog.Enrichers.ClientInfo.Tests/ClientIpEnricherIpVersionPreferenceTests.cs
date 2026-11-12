@@ -155,6 +155,32 @@ public class ClientIpEnricherIpVersionPreferenceTests
         Assert.False(evt.Properties.ContainsKey("ClientIp"));
     }
 
+    [Theory]
+    [InlineData("::ffff:192.168.1.1", "192.168.1.1")]
+    [InlineData("::ffff:203.0.113.7", "203.0.113.7")]
+    public void EnrichLogWithClientIp_WithIpv4OnlyPreferenceAndIpv4MappedIpv6Address_ShouldLogIpv4Address(string ip,
+        string expectedIp)
+    {
+        // Arrange
+        _contextAccessor.HttpContext!.Connection.RemoteIpAddress = IPAddress.Parse(ip);
+
+        ClientIpEnricher ipEnricher = new(_contextAccessor, IpVersionPreference.Ipv4Only);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(ipEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Has an IP property");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.True(evt.Properties.ContainsKey("ClientIp"));
+        Assert.Equal(expectedIp, evt.Properties["ClientIp"].LiteralValue());
+    }
+
     [Fact]
     public void WithClientIp_WithIpVersionPreference_ShouldNotThrowException()
     {

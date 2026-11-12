@@ -18,20 +18,28 @@
 		<releaseNotes>
 			- Add .NET 11 support.
 			- Remove .NET 8 and .NET 9 targets.
-			- Fix NU1902: reference Microsoft.AspNetCore.WebUtilities 2.3.14 (CVE-2026-118750).
+			- Reference the Microsoft.AspNetCore.App shared framework instead of the Microsoft.AspNetCore.Http 2.x packages.
+			- Limit the length of logged header values (1024) and accepted correlation ids (128), and remove control characters.
+			- Fix lost log properties when several threads log within the same request.
+			- Ipv4Only now logs IPv4-mapped IPv6 addresses as IPv4.
+			- User claims are always read from the current principal.
 		</releaseNotes>
 		<dependencies>
 			<group targetFramework=".NET10.0">
-				<dependency id="Microsoft.AspNetCore.Http" version="2.3.14" />
-				<dependency id="Microsoft.AspNetCore.WebUtilities" version="2.3.14" />
 				<dependency id="Serilog" version="4.3.0" />
 			</group>
 			<group targetFramework=".NET11.0">
-				<dependency id="Microsoft.AspNetCore.Http" version="2.3.14" />
-				<dependency id="Microsoft.AspNetCore.WebUtilities" version="2.3.14" />
 				<dependency id="Serilog" version="4.3.0" />
 			</group>
 		</dependencies>
+		<frameworkReferences>
+			<group targetFramework=".NET10.0">
+				<frameworkReference name="Microsoft.AspNetCore.App" />
+			</group>
+			<group targetFramework=".NET11.0">
+				<frameworkReference name="Microsoft.AspNetCore.App" />
+			</group>
+		</frameworkReferences>
 	</metadata>
 	<files>
 		<file src="src\Serilog.Enrichers.ClientInfo\bin\release\net10.0\*" target="lib/net10.0" />

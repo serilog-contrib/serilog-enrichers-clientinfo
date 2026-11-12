@@ -224,6 +224,53 @@ public class ClientIpEnricherTests
     }
 
     [Fact]
+    public void EnrichLogWithClientIp_WhenRemoteIpAddressChangesDuringRequest_ShouldLogCurrentAddress()
+    {
+        // Arrange
+        _contextAccessor.HttpContext.Connection.RemoteIpAddress = IPAddress.Parse("10.0.0.1");
+        ClientIpEnricher ipEnricher = new(_contextAccessor);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(ipEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Logged before forwarded headers are applied");
+        _contextAccessor.HttpContext.Connection.RemoteIpAddress = IPAddress.Parse("203.0.113.7");
+        log.Information("Logged after forwarded headers are applied");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.Equal("203.0.113.7", evt.Properties["ClientIp"].LiteralValue());
+    }
+
+    [Fact]
+    public void EnrichLogWithClientIp_WhenRegisteredUnderTwoPropertyNames_ShouldCreateBothProperties()
+    {
+        // Arrange
+        _contextAccessor.HttpContext.Connection.RemoteIpAddress = IPAddress.Loopback;
+        ClientIpEnricher first = new(_contextAccessor);
+        ClientIpEnricher second = new(_contextAccessor, IpVersionPreference.None, "client.address");
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(first)
+            .Enrich.With(second)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Has two IP properties");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.Equal(IPAddress.Loopback.ToString(), evt.Properties["ClientIp"].LiteralValue());
+        Assert.Equal(IPAddress.Loopback.ToString(), evt.Properties["client.address"].LiteralValue());
+    }
+
+    [Fact]
     public void ClientIpEnricher_WithNullPropertyName_ShouldThrowArgumentNullException()
     {
         // Act & Assert

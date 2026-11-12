@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using Microsoft.AspNetCore.Http;
 using Serilog.Core;
 using Serilog.Events;
 
@@ -7,9 +8,9 @@ namespace Serilog.Enrichers;
 /// <inheritdoc />
 public class ClientHeaderEnricher : ILogEventEnricher
 {
-    private readonly string _clientHeaderItemKey;
     private readonly IHttpContextAccessor _contextAccessor;
     private readonly string _headerKey;
+    private readonly int _maxLength;
     private readonly string _propertyName;
 
     /// <summary>
@@ -22,16 +23,29 @@ public class ClientHeaderEnricher : ILogEventEnricher
     {
     }
 
-    internal ClientHeaderEnricher(string headerKey, string propertyName, IHttpContextAccessor contextAccessor)
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ClientHeaderEnricher" /> class.
+    /// </summary>
+    /// <param name="headerKey">The key of the header.</param>
+    /// <param name="propertyName">The name of the property.</param>
+    /// <param name="maxLength">The maximum number of characters of the header value to log.</param>
+    public ClientHeaderEnricher(string headerKey, string propertyName, int maxLength)
+        : this(headerKey, propertyName, new HttpContextAccessor(), maxLength)
     {
-        _headerKey = headerKey;
-        _propertyName = string.IsNullOrWhiteSpace(propertyName) ? headerKey.Replace("-", "") : propertyName;
-        _clientHeaderItemKey = $"Serilog_{headerKey}";
-        _contextAccessor = contextAccessor;
     }
 
-    internal ClientHeaderEnricher(IHttpContextAccessor contextAccessor)
+    internal ClientHeaderEnricher(
+        string headerKey, 
+        string propertyName, 
+        IHttpContextAccessor contextAccessor,
+        int maxLength = HeaderValueSanitizer.DefaultMaxHeaderLength)
     {
+        ArgumentNullException.ThrowIfNull(headerKey, nameof(headerKey));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxLength, nameof(maxLength));
+
+        _headerKey = headerKey;
+        _propertyName = string.IsNullOrWhiteSpace(propertyName) ? headerKey.Replace("-", "") : propertyName;
+        _maxLength = maxLength;
         _contextAccessor = contextAccessor;
     }
 
@@ -41,19 +55,11 @@ public class ClientHeaderEnricher : ILogEventEnricher
         HttpContext httpContext = _contextAccessor.HttpContext;
         if (httpContext == null) return;
 
-        if (httpContext.Items.TryGetValue(_clientHeaderItemKey, out object value) &&
-            value is LogEventProperty logEventProperty)
-        {
-            logEvent.AddPropertyIfAbsent(logEventProperty);
-            return;
-        }
+        // The value is read on every event rather than cached in HttpContext.Items: the lookup is cheap and
+        // writing to Items is not safe when several threads log within the same request.
+        string headerValue = HeaderValueSanitizer.Sanitize(httpContext.Request.Headers[_headerKey].ToString(),
+            _maxLength);
 
-        string headerValue = httpContext.Request.Headers[_headerKey].ToString();
-        headerValue = string.IsNullOrWhiteSpace(headerValue) ? null : headerValue;
-
-        LogEventProperty logProperty = new(_propertyName, new ScalarValue(headerValue));
-        httpContext.Items.Add(_clientHeaderItemKey, logProperty);
-
-        logEvent.AddPropertyIfAbsent(logProperty);
+        logEvent.AddPropertyIfAbsent(new LogEventProperty(_propertyName, new ScalarValue(headerValue)));
     }
 }

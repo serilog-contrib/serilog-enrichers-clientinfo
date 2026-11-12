@@ -97,6 +97,7 @@ public static class ClientInfoLoggerConfigurationExtensions
     ///     <see cref="HttpContext" /> header collection.
     /// </param>
     /// <exception cref="ArgumentNullException">enrichmentConfiguration</exception>
+    /// <exception cref="ArgumentNullException">headerName</exception>
     /// <returns>The logger configuration so that multiple calls can be chained.</returns>
     public static LoggerConfiguration WithCorrelationId(
         this LoggerEnrichmentConfiguration enrichmentConfiguration,
@@ -104,8 +105,40 @@ public static class ClientInfoLoggerConfigurationExtensions
         bool addValueIfHeaderAbsence = false)
     {
         ArgumentNullException.ThrowIfNull(enrichmentConfiguration, nameof(enrichmentConfiguration));
+        ArgumentNullException.ThrowIfNull(headerName, nameof(headerName));
 
         return enrichmentConfiguration.With(new CorrelationIdEnricher(headerName, addValueIfHeaderAbsence));
+    }
+
+    /// <summary>
+    ///     Registers the correlation id enricher to enrich logs with correlation id with
+    ///     'x-correlation-id' header information.
+    /// </summary>
+    /// <param name="enrichmentConfiguration">The enrichment configuration.</param>
+    /// <param name="headerName">The name of the header that carries the correlation id.</param>
+    /// <param name="addValueIfHeaderAbsence">
+    ///     Add generated correlation id value if correlation id header is not available, or not acceptable, in
+    ///     <see cref="HttpContext" /> header collection.
+    /// </param>
+    /// <param name="maxLength">
+    ///     The maximum accepted length of the correlation id header value. A longer value is treated as absent.
+    ///     The default used by the other overload is 128.
+    /// </param>
+    /// <exception cref="ArgumentNullException">enrichmentConfiguration</exception>
+    /// <exception cref="ArgumentNullException">headerName</exception>
+    /// <exception cref="ArgumentOutOfRangeException">maxLength</exception>
+    /// <returns>The logger configuration so that multiple calls can be chained.</returns>
+    public static LoggerConfiguration WithCorrelationId(
+        this LoggerEnrichmentConfiguration enrichmentConfiguration,
+        string headerName,
+        bool addValueIfHeaderAbsence,
+        int maxLength)
+    {
+        ArgumentNullException.ThrowIfNull(enrichmentConfiguration, nameof(enrichmentConfiguration));
+        ArgumentNullException.ThrowIfNull(headerName, nameof(headerName));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxLength, nameof(maxLength));
+
+        return enrichmentConfiguration.With(new CorrelationIdEnricher(headerName, addValueIfHeaderAbsence, maxLength));
     }
 
     /// <summary>
@@ -124,6 +157,30 @@ public static class ClientInfoLoggerConfigurationExtensions
         ArgumentNullException.ThrowIfNull(headerName, nameof(headerName));
 
         return enrichmentConfiguration.With(new ClientHeaderEnricher(headerName, propertyName));
+    }
+
+    /// <summary>
+    ///     Registers the HTTP request header enricher to enrich logs with the header value.
+    /// </summary>
+    /// <param name="enrichmentConfiguration">The enrichment configuration.</param>
+    /// <param name="headerName">The header name to log its value</param>
+    /// <param name="propertyName">The property name of log</param>
+    /// <param name="maxLength">
+    ///     The maximum number of characters of the header value to log. A longer value is truncated. The default
+    ///     used by the other overload is 1024.
+    /// </param>
+    /// <exception cref="ArgumentNullException">enrichmentConfiguration</exception>
+    /// <exception cref="ArgumentNullException">headerName</exception>
+    /// <exception cref="ArgumentOutOfRangeException">maxLength</exception>
+    /// <returns>The logger configuration so that multiple calls can be chained.</returns>
+    public static LoggerConfiguration WithRequestHeader(this LoggerEnrichmentConfiguration enrichmentConfiguration,
+        string headerName, string propertyName, int maxLength)
+    {
+        ArgumentNullException.ThrowIfNull(enrichmentConfiguration, nameof(enrichmentConfiguration));
+        ArgumentNullException.ThrowIfNull(headerName, nameof(headerName));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxLength, nameof(maxLength));
+
+        return enrichmentConfiguration.With(new ClientHeaderEnricher(headerName, propertyName, maxLength));
     }
 
     /// <summary>

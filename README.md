@@ -88,7 +88,7 @@ Available IP version preferences:
 - `None` (default): No preference - use whatever IP version is available
 - `PreferIpv4`: Prefer IPv4 addresses when multiple are available, fallback to IPv6
 - `PreferIpv6`: Prefer IPv6 addresses when multiple are available, fallback to IPv4  
-- `Ipv4Only`: Only log IPv4 addresses, ignore IPv6 addresses
+- `Ipv4Only`: Only log IPv4 addresses, ignore IPv6 addresses. An IPv4-mapped IPv6 address (`::ffff:203.0.113.7`, as reported by dual-stack listeners) is logged as its IPv4 form
 - `Ipv6Only`: Only log IPv6 addresses, ignore IPv4 addresses
 
 #### Custom Property Name
@@ -154,6 +154,14 @@ or
   }
 }
 ```
+#### Validation
+The correlation id header is client-controlled, so a value longer than 128 characters or containing control characters is treated as absent: a new id is generated when `addValueIfHeaderAbsence` is `true`, otherwise `null` is logged. The limit can be changed with the `maxLength` parameter:
+```csharp
+Log.Logger = new LoggerConfiguration()
+    .Enrich.WithCorrelationId(headerName: "correlation-id", addValueIfHeaderAbsence: true, maxLength: 64)
+    ...
+```
+
 #### Retrieving Correlation ID
 You can easily retrieve the correlation ID from `HttpContext` using the `GetCorrelationId()` extension method:
 ```csharp
@@ -219,6 +227,14 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] {Level:u3} {UserAgent} {Message:lj}{NewLine}{Exception}")
 ```
 
+#### Length limit and control characters
+Header values are client-controlled. Control characters (including line breaks) are removed, and values longer than 1024 characters are truncated before they are logged. The limit can be changed with the `maxLength` parameter:
+```csharp
+Log.Logger = new LoggerConfiguration()
+    .Enrich.WithRequestHeader(headerName: "User-Agent", propertyName: "UserAgent", maxLength: 256)
+    ...
+```
+
 ### UserClaims
 The `UserClaims` enricher allows you to log specific user claim values from authenticated users. This is useful for tracking user-specific information in your logs.
 
@@ -256,7 +272,7 @@ or in `appsettings.json` file:
 - **Configurable Claims**: Specify which claims to log by providing claim names as parameters.
 - **Null-Safe**: If a claim doesn't exist, it will be logged as `null` instead of throwing an error.
 - **Authentication-Aware**: Only logs claims when the user is authenticated. If the user is not authenticated, no claim properties are added to the log.
-- **Performance-Optimized**: Claim values are cached per request for better performance.
+- **Always Current**: Claim values are read from the current `HttpContext.User` on every log event, so a principal replaced during the request is reflected immediately.
 
 #### Example with Multiple Claims
 ```csharp

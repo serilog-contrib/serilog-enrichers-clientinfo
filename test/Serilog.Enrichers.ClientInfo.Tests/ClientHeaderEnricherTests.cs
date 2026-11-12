@@ -151,6 +151,134 @@ public class ClientHeaderEnricherTests
     }
 
     [Fact]
+    public void EnrichLogWithClientHeader_WhenHeaderValueExceedsMaxLength_ShouldTruncateValue()
+    {
+        // Arrange
+        string headerKey = "RequestId";
+        _contextAccessor.HttpContext!.Request!.Headers[headerKey] = new string('a', 50);
+        ClientHeaderEnricher clientHeaderEnricher = new(headerKey, string.Empty, _contextAccessor, 10);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(clientHeaderEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Testing log enricher.");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.Equal(new string('a', 10), evt.Properties[headerKey].LiteralValue());
+    }
+
+    [Fact]
+    public void EnrichLogWithClientHeader_WhenHeaderValueExceedsDefaultMaxLength_ShouldTruncateTo1024()
+    {
+        // Arrange
+        string headerKey = "RequestId";
+        _contextAccessor.HttpContext!.Request!.Headers[headerKey] = new string('a', 30000);
+        ClientHeaderEnricher clientHeaderEnricher = new(headerKey, string.Empty, _contextAccessor);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(clientHeaderEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Testing log enricher.");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.Equal(1024, ((string)evt.Properties[headerKey].LiteralValue()).Length);
+    }
+
+    [Fact]
+    public void EnrichLogWithClientHeader_WhenHeaderValueContainsControlCharacters_ShouldRemoveThem()
+    {
+        // Arrange
+        string headerKey = "RequestId";
+        string lineFeed = ((char)0x0A).ToString();
+        string carriageReturn = ((char)0x0D).ToString();
+        string lineSeparator = ((char)0x2028).ToString();
+        _contextAccessor.HttpContext!.Request!.Headers[headerKey] =
+            "value" + carriageReturn + lineFeed + "[12:00:00] INF forged" + lineSeparator + "entry";
+        ClientHeaderEnricher clientHeaderEnricher = new(headerKey, string.Empty, _contextAccessor);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(clientHeaderEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Testing log enricher.");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.Equal("value[12:00:00] INF forgedentry", evt.Properties[headerKey].LiteralValue());
+    }
+
+    [Fact]
+    public void EnrichLogWithClientHeader_WhenHeaderValueContainsOnlyControlCharacters_ShouldLogNull()
+    {
+        // Arrange
+        string headerKey = "RequestId";
+        _contextAccessor.HttpContext!.Request!.Headers[headerKey] = new string((char)0x00, 3);
+        ClientHeaderEnricher clientHeaderEnricher = new(headerKey, string.Empty, _contextAccessor);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(clientHeaderEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Testing log enricher.");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.Null(evt.Properties[headerKey].LiteralValue());
+    }
+
+    [Fact]
+    public void EnrichLogWithClientHeader_WhenSameHeaderIsLoggedUnderTwoNames_ShouldCreateBothProperties()
+    {
+        // Arrange
+        string headerKey = "User-Agent";
+        _contextAccessor.HttpContext!.Request!.Headers[headerKey] = "agent";
+        ClientHeaderEnricher first = new(headerKey, "FirstName", _contextAccessor);
+        ClientHeaderEnricher second = new(headerKey, "SecondName", _contextAccessor);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(first)
+            .Enrich.With(second)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Testing log enricher.");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.Equal("agent", evt.Properties["FirstName"].LiteralValue());
+        Assert.Equal("agent", evt.Properties["SecondName"].LiteralValue());
+    }
+
+    [Fact]
+    public void WithRequestHeader_WithNonPositiveMaxLength_ShouldThrowArgumentOutOfRangeException()
+    {
+        // Arrange
+        LoggerConfiguration loggerConfiguration = new();
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            loggerConfiguration.Enrich.WithRequestHeader("HeaderName", null, 0));
+    }
+
+    [Fact]
     public void WithRequestHeader_ThenLoggerIsCalled_ShouldNotThrowException()
     {
         // Arrange

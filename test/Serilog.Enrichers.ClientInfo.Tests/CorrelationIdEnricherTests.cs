@@ -3,6 +3,10 @@ using NSubstitute;
 using Serilog.Core;
 using Serilog.Events;
 using System;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Serilog.Enrichers.ClientInfo.Tests;
@@ -300,6 +304,162 @@ public class CorrelationIdEnricherTests
         Assert.Equal(correlationId, retrievedCorrelationIdOldWay);
         Assert.Equal(correlationId, retrievedCorrelationIdNewWay);
         Assert.Equal(retrievedCorrelationIdOldWay, retrievedCorrelationIdNewWay);
+    }
+
+    [Fact]
+    public void EnrichLogWithCorrelationId_WhenHeaderExceedsMaxLength_ShouldTreatHeaderAsAbsent()
+    {
+        // Arrange
+        _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = new string('a', 129);
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(correlationIdEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Has a correlation id.");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.Null(evt.Properties[LogPropertyName].LiteralValue());
+        Assert.Null(_contextAccessor.HttpContext!.GetCorrelationId());
+    }
+
+    [Fact]
+    public void EnrichLogWithCorrelationId_WhenHeaderExceedsMaxLengthAndAddDefaultValueIsTrue_ShouldGenerateValue()
+    {
+        // Arrange
+        _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = new string('a', 30000);
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, true, _contextAccessor);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(correlationIdEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Has a correlation id.");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.True(Guid.TryParse((string)evt.Properties[LogPropertyName].LiteralValue(), out _));
+        Assert.True(Guid.TryParse(_contextAccessor.HttpContext!.GetCorrelationId(), out _));
+    }
+
+    [Fact]
+    public void EnrichLogWithCorrelationId_WhenHeaderIsWithinCustomMaxLength_ShouldUseHeaderValue()
+    {
+        // Arrange
+        string correlationId = new('a', 200);
+        _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = correlationId;
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor, 200);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(correlationIdEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Has a correlation id.");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.Equal(correlationId, evt.Properties[LogPropertyName].LiteralValue());
+    }
+
+    [Fact]
+    public void EnrichLogWithCorrelationId_WhenHeaderContainsControlCharacters_ShouldTreatHeaderAsAbsent()
+    {
+        // Arrange
+        string lineFeed = ((char)0x0A).ToString();
+        _contextAccessor.HttpContext!.Request!.Headers[HeaderKey] = "abc" + lineFeed + "[12:00:00] INF forged";
+        CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, false, _contextAccessor);
+
+        LogEvent evt = null;
+        Logger log = new LoggerConfiguration()
+            .Enrich.With(correlationIdEnricher)
+            .WriteTo.Sink(new DelegatingSink(e => evt = e))
+            .CreateLogger();
+
+        // Act
+        log.Information("Has a correlation id.");
+
+        // Assert
+        Assert.NotNull(evt);
+        Assert.Null(evt.Properties[LogPropertyName].LiteralValue());
+        Assert.Null(_contextAccessor.HttpContext!.GetCorrelationId());
+    }
+
+    [Fact]
+    public async Task EnrichLogWithCorrelationId_WhenLoggedConcurrentlyInOneRequest_ShouldUseOneCorrelationId()
+    {
+        // Arrange
+        const int threads = 8;
+        const int requests = 300;
+        ConcurrentBag<string> failures = [];
+
+        for (int request = 0; request < requests; request++)
+        {
+            DefaultHttpContext httpContext = new();
+            IHttpContextAccessor contextAccessor = Substitute.For<IHttpContextAccessor>();
+            contextAccessor.HttpContext.Returns(httpContext);
+            CorrelationIdEnricher correlationIdEnricher = new(HeaderKey, true, contextAccessor);
+
+            ConcurrentBag<LogEvent> events = [];
+            Logger log = new LoggerConfiguration()
+                .Enrich.With(correlationIdEnricher)
+                .WriteTo.Sink(new DelegatingSink(events.Add))
+                .CreateLogger();
+
+            // Act
+            using Barrier barrier = new(threads);
+            Task[] tasks = Enumerable.Range(0, threads).Select(_ => Task.Factory.StartNew(() =>
+            {
+                barrier.SignalAndWait();
+                log.Information("Has a correlation id.");
+            }, TaskCreationOptions.LongRunning)).ToArray();
+            await Task.WhenAll(tasks);
+
+            // Assert
+            string[] correlationIds = events
+                .Select(e => e.Properties.TryGetValue(LogPropertyName, out LogEventPropertyValue value)
+                    ? value.LiteralValue() as string
+                    : null)
+                .Distinct()
+                .ToArray();
+
+            if (events.Count != threads || correlationIds.Length != 1 || correlationIds[0] == null ||
+                correlationIds[0] != httpContext.GetCorrelationId())
+                failures.Add($"request {request}: {events.Count} events, ids: {string.Join(", ", correlationIds)}");
+        }
+
+        Assert.Empty(failures);
+    }
+
+    [Fact]
+    public void WithCorrelationId_WithNullHeaderName_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        LoggerConfiguration loggerConfiguration = new();
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => loggerConfiguration.Enrich.WithCorrelationId(null));
+    }
+
+    [Fact]
+    public void WithCorrelationId_WithNonPositiveMaxLength_ShouldThrowArgumentOutOfRangeException()
+    {
+        // Arrange
+        LoggerConfiguration loggerConfiguration = new();
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            loggerConfiguration.Enrich.WithCorrelationId(HeaderKey, true, 0));
     }
 
     [Fact]
