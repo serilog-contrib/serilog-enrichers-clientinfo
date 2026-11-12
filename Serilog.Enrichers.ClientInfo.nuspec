@@ -14,7 +14,7 @@
 		<readme>docs\README.md</readme>
 		<icon>assets\icon.png</icon>
 		<tags>serilog enrichers enricher ip correlation-id request header</tags>
-		<copyright>© 2025 Serilog Contributors</copyright>
+		<copyright>© 2026 Serilog Contributors</copyright>
 		<releaseNotes>
 			- Add .NET 11 support.
 			- Remove .NET 8 and .NET 9 targets.
